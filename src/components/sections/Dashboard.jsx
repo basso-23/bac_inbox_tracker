@@ -4,9 +4,7 @@ import { useSession, signIn, signOut } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 
 import { Table, Thead, Tbody, Tr, Th, Td } from "react-super-responsive-table";
-
 import { Button } from "@/components/ui/button";
-
 import { FiSearch } from "react-icons/fi";
 
 /// Componente iframe para renderizar HTML
