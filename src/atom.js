@@ -3,5 +3,5 @@ import { atom } from "jotai";
 //* Informacion de sesion
 export const sessionAtom = atom();
 
-//* Informacion de sesion
+//* Mails obtenidos
 export const mailsAtom = atom();

@@ -11,9 +11,8 @@ const decodeBase64 = (str) => {
   }
 };
 
-export default async function fetchMails(accessToken, target) {
+export default async function fetchMails({ accessToken, target, qty }) {
   let mails = [];
-  const QUANTITY_MAILS = "10";
 
   try {
     const headers = {
@@ -25,7 +24,7 @@ export default async function fetchMails(accessToken, target) {
     const listRes = await fetch(
       `https://gmail.googleapis.com/gmail/v1/users/me/messages?q=${encodeURIComponent(
         query
-      )}&maxResults=${QUANTITY_MAILS}`,
+      )}&maxResults=${qty.toString()}`,
       { headers }
     );
     const listData = await listRes.json();

@@ -6,11 +6,22 @@ import fetchMails from "@/lib/fetchMails";
 
 export default async function Home() {
   const session = await getServerSession(authOptions);
+
   let mails = [];
 
   //Obtener correos
   if (session) {
-    mails = await fetchMails(session.accessToken, "notificacion_pa@pa.bac.net");
+    mails = await fetchMails({
+      accessToken: session.accessToken,
+      target: "notificacion_pa@pa.bac.net",
+      qty: 1,
+    });
+  }
+
+  if (mails.length === 0) {
+    console.log("sesión de correo EXPIRADA");
+  } else {
+    console.log("sesión de correo ACTIVA");
   }
 
   return (
