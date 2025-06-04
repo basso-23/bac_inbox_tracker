@@ -4,8 +4,7 @@ import { useSession, signIn, signOut } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 
 import { Table, Thead, Tbody, Tr, Th, Td } from "react-super-responsive-table";
-import { Button } from "@/components/ui/button";
-import { FiSearch } from "react-icons/fi";
+import { FaAngleDown } from "react-icons/fa6";
 
 /// Componente iframe para renderizar HTML
 function EmailIframe({ html }) {
@@ -57,7 +56,7 @@ export default function Dashboard({ session, mails }) {
         },
         body: JSON.stringify({
           target: "notificacion_pa@pa.bac.net",
-          qty: 5,
+          qty: 500,
         }),
       });
 
@@ -79,9 +78,9 @@ export default function Dashboard({ session, mails }) {
   if (!session) {
     return (
       <div className="flex justify-center p-8">
-        <Button asChild variant="default">
-          <button onClick={() => signIn()}>Iniciar sesión con Google</button>
-        </Button>
+        <button className="btn-primary transition-all" onClick={() => signIn()}>
+          Iniciar sesión con Google
+        </button>
       </div>
     );
   }
@@ -89,98 +88,58 @@ export default function Dashboard({ session, mails }) {
   ///Logged in
   return (
     <>
-      <div className="main-container">
-        {loading && (
+      {/*{loading && (
           <div className="p-4 text-center font-semibold animate-pulse">
             Cargando correos...
           </div>
-        )}
+        )}*/}
+
+      <div className="main-container general-padding">
         {/*//---- HEADER ---- */}
-        <div className="title-container general-padding">
-          {/*//* Image */}
-          <div
-            className="title-image"
-            style={{ backgroundImage: `url(${session.user.image})` }}
-          ></div>
-
+        <div className="header-container">
           {/*//* Name */}
-          <div>
-            <div className="title">Bienvenido, {session.user.name}</div>
-            <div className="subtitle leading-4">
-              Estas son tus transacciones más recientes
-            </div>
+          <div className="font-large tracking-tight">
+            Bienvenido, {session.user.name}
           </div>
-        </div>
 
-        {/*//---- ACTION BUTTONS ---- */}
-        <div className="action-buttons-container ">
-          <div className="general-padding action-buttons-content">
-            {/*//* Left */}
-            <div className="action-buttons-left">
-              <div className="searchbar-container">
-                <input
-                  type="text"
-                  placeholder="Buscar comercio"
-                  className="search-input"
-                />
-                <div className="search-icon">
-                  <FiSearch />
-                </div>
-              </div>
+          {/*//* Right Header */}
+          <div className="header-right">
+            <div>options1</div>
 
+            <div>options2</div>
+
+            <button className="profile-container">
+              <div
+                className="profile-image"
+                style={{ backgroundImage: `url(${session.user.image})` }}
+              ></div>
               <div>
-                <button className="update-btn" onClick={updateMails}>
-                  Actualizar correos
-                </button>
+                <FaAngleDown />
               </div>
-            </div>
-
-            {/*//* Right */}
-            <div></div>
+            </button>
           </div>
         </div>
 
-        {/*//---- TABLE ---- */}
-        <div>
-          <Table>
-            <Thead className="table-head ">
-              <Tr>
-                <Th className="first-th">Comercio</Th>
-                <Th>Monto</Th>
-                <Th>Fecha y hora</Th>
-                <Th>Tipo de compra</Th>
-                <Th>Estado</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {emails.map((email) => {
-                return (
-                  <Tr
-                    className="general-padding"
-                    key={email.id}
-                    onClick={() => console.log(email.id)}
-                  >
-                    <Td className="first-th capitalize">{email.comercio}</Td>
-                    <Td>${email.monto}</Td>
-                    <Td>{email.fechaHora}</Td>
-                    <Td>{email.tipo}</Td>
-                    <Td>{email.estado}</Td>
-                  </Tr>
-                );
-              })}
-            </Tbody>
-          </Table>
+        <div className="content-container general-padding">
+          {/*//---- ACTIONS ---- */}
+          <div className="actions-container">
+            {/*//* Actions left */}
+            <div className="actions-left">
+              <div className="font-large tracking-tight">Transacciones</div>
+            </div>
+
+            {/*//* Actions left */}
+            <div className="actions-right">
+              <div>button1</div>
+              <div>button2</div>
+              <div>button3</div>
+            </div>
+          </div>
+
+          {/*//---- RECTANGLES INFO ---- */}
+          <div className="rectangles-container"></div>
         </div>
       </div>
-
-      {/*//---- RENDER DEL BODY DE LOS CORREOS ---- 
-      {emails.map((email) => {
-        return (
-          <div key={email.id}>
-            <EmailIframe html={email.body} />
-          </div>
-        );
-      })}*/}
     </>
   );
 }

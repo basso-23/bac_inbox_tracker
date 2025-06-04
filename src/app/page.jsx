@@ -18,7 +18,7 @@ export default async function Home() {
   }
 
   return (
-    <main>
+    <main className="font-general">
       <Dashboard session={session} mails={mails} />
     </main>
   );
