@@ -99,6 +99,17 @@ export default async function fetchMails({ accessToken, target, qty }) {
               }
             });
 
+            // Ubicamos la informacion de "Tipo de compra y Estado" dentro del correo
+            const strongs4 = doc.querySelectorAll("strong");
+            strongs4.forEach((el) => {
+              if (el.textContent.trim() === "Panamá") {
+                const tr = el.closest("tr");
+                if (tr) {
+                  tr.id = "final-content";
+                }
+              }
+            });
+
             // Extraer valores de comercio y monto
             const refRow1 = doc.getElementById("name_plus_amount");
             if (refRow1 && refRow1.nextElementSibling) {
@@ -138,6 +149,17 @@ export default async function fetchMails({ accessToken, target, qty }) {
               const td = valueRow.querySelector("td");
               const fechaP = td?.querySelector("p");
               fechaHora = fechaP?.textContent.trim() || "";
+            }
+
+            // Borrar el tr que le sigue al id final-content
+            const refRowFinal = doc.getElementById("final-content");
+            if (
+              refRowFinal &&
+              refRowFinal.nextElementSibling?.tagName === "TR"
+            ) {
+              refRowFinal.parentNode.removeChild(
+                refRowFinal.nextElementSibling
+              );
             }
 
             body = doc.documentElement.outerHTML;
