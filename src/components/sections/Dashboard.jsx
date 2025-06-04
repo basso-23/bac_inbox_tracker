@@ -42,7 +42,40 @@ function EmailIframe({ html }) {
 }
 
 export default function Dashboard({ session, mails }) {
-  let emails = mails;
+  const [emails, setEmails] = useState(mails);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    console.log(emails);
+  }, [emails]);
+
+  const updateMails = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/get-mails", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          target: "notificacion_pa@pa.bac.net",
+          qty: 5,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setEmails(data.mails);
+      } else {
+        console.error("Error:", data.error);
+      }
+    } catch (error) {
+      console.error("Error en fetch:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   ///No session
   if (!session) {
@@ -59,6 +92,11 @@ export default function Dashboard({ session, mails }) {
   return (
     <>
       <div className="main-container">
+        {loading && (
+          <div className="p-4 text-center font-semibold animate-pulse">
+            Cargando correos...
+          </div>
+        )}
         {/*//---- HEADER ---- */}
         <div className="title-container general-padding">
           {/*//* Image */}
@@ -93,10 +131,7 @@ export default function Dashboard({ session, mails }) {
               </div>
 
               <div>
-                <button
-                  className="update-btn"
-                  onClick={() => console.log("actualizar correos")}
-                >
+                <button className="update-btn" onClick={updateMails}>
                   Actualizar correos
                 </button>
               </div>
@@ -140,14 +175,14 @@ export default function Dashboard({ session, mails }) {
         </div>
       </div>
 
-      {/*//---- RENDER DEL BODY DE LOS CORREOS ---- */}
+      {/*//---- RENDER DEL BODY DE LOS CORREOS ---- 
       {emails.map((email) => {
         return (
           <div key={email.id}>
             <EmailIframe html={email.body} />
           </div>
         );
-      })}
+      })}*/}
     </>
   );
 }

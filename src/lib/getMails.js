@@ -11,7 +11,7 @@ const decodeBase64 = (str) => {
   }
 };
 
-export default async function fetchMails({ accessToken, target, qty }) {
+export default async function getMails({ accessToken, target, qty }) {
   let mails = [];
 
   try {
