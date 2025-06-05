@@ -9,6 +9,7 @@ import { MdSearch } from "react-icons/md";
 import { FiFilter } from "react-icons/fi";
 import { VscSettings } from "react-icons/vsc";
 import { RxUpdate } from "react-icons/rx";
+import { RxCaretSort } from "react-icons/rx";
 
 /// Componente iframe para renderizar HTML
 function EmailIframe({ html }) {
@@ -50,6 +51,9 @@ export default function Dashboard({ session, mails }) {
   const [qtyMails, setQtyMails] = useState();
   const [qtyApproved, setQtyApproved] = useState();
   const [qtyRejected, setQtyRejected] = useState();
+
+  const [showIframe, setShowIframe] = useState(false);
+  const [currentId, setCurrentId] = useState();
 
   ///Se activa cada vez que se actualiza los mails
   useEffect(() => {
@@ -229,7 +233,7 @@ export default function Dashboard({ session, mails }) {
               color={"circle-bg-qty"}
             />
             <CircleTag
-              name={"Aprobadas"}
+              name={"Completadas"}
               number={qtyApproved}
               color={"circle-bg-approved"}
             />
@@ -245,26 +249,78 @@ export default function Dashboard({ session, mails }) {
             <Table>
               <Thead className="table-head ">
                 <Tr>
-                  <Th className="first-th">Comercio</Th>
-                  <Th>Monto</Th>
-                  <Th>Fecha y hora</Th>
-                  <Th>Tipo de compra</Th>
-                  <Th>Estado</Th>
+                  <Th className="first-th">
+                    <div className="table-header">
+                      Comercio
+                      <span className="sort-icon">
+                        <RxCaretSort />
+                      </span>
+                    </div>
+                  </Th>
+                  <Th>
+                    <div className="table-header">
+                      Fecha y hora
+                      <span className="sort-icon">
+                        <RxCaretSort />
+                      </span>
+                    </div>
+                  </Th>
+                  <Th>
+                    <div className="table-header">
+                      Estado
+                      <span className="sort-icon">
+                        <RxCaretSort />
+                      </span>
+                    </div>
+                  </Th>
+                  <Th>
+                    <div className="table-header">
+                      Monto
+                      <span className="sort-icon">
+                        <RxCaretSort />
+                      </span>
+                    </div>
+                  </Th>
+                  <Th>
+                    <div className="table-header">
+                      Tipo de compra
+                      <span className="sort-icon">
+                        <RxCaretSort />
+                      </span>
+                    </div>
+                  </Th>
+
+                  <Th>
+                    <div className="table-header">Info</div>
+                  </Th>
                 </Tr>
               </Thead>
-              <Tbody>
+              <Tbody className="table-body">
                 {emails.map((email) => {
                   return (
-                    <Tr
-                      className="general-padding"
-                      key={email.id}
-                      onClick={() => console.log(email.id)}
-                    >
+                    <Tr className="general-padding" key={email.id}>
                       <Td className="first-th capitalize">{email.comercio}</Td>
-                      <Td>${email.monto}</Td>
                       <Td>{email.fechaHora}</Td>
+                      <Td>
+                        {email.estado.toLowerCase() === "aprobada" ? (
+                          <div className="status-approved">Completada</div>
+                        ) : (
+                          <div className="status-rejected">Rechazada</div>
+                        )}
+                      </Td>
+                      <Td>${email.monto}</Td>
                       <Td>{email.tipo}</Td>
-                      <Td>{email.estado}</Td>
+                      <Td>
+                        <button
+                          className="show-mail-btn transition-all"
+                          onClick={() => {
+                            setCurrentId(email.id);
+                            setShowIframe(true);
+                          }}
+                        >
+                          Ver correo
+                        </button>
+                      </Td>
                     </Tr>
                   );
                 })}
@@ -272,6 +328,28 @@ export default function Dashboard({ session, mails }) {
             </Table>
           </div>
         </div>
+
+        {/*//---- RENDER DEL BODY DE LOS CORREOS ---- */}
+
+        {emails.map((email) => {
+          return (
+            <div key={email.id}>
+              {currentId === email.id && showIframe && (
+                <div className="iframe-container">
+                  <button
+                    className="close-iframe-btn"
+                    onClick={() => {
+                      setShowIframe(false);
+                    }}
+                  >
+                    Cerrar
+                  </button>
+                  <EmailIframe html={email.body} />
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </>
   );
