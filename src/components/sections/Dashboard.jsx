@@ -46,10 +46,51 @@ export default function Dashboard({ session, mails }) {
   const [emails, setEmails] = useState(mails);
   const [loading, setLoading] = useState(false);
 
+  const [totalAmount, setTotalAmount] = useState();
+  const [qtyMails, setQtyMails] = useState();
+  const [qtyApproved, setQtyApproved] = useState();
+  const [qtyRejected, setQtyRejected] = useState();
+
+  ///Se activa cada vez que se actualiza los mails
   useEffect(() => {
     console.log(emails);
+
+    if (emails) {
+      //Monto total
+      let sumaMontos = 0;
+      for (const email of emails) {
+        sumaMontos += parseFloat(email.monto);
+      }
+      setTotalAmount("$" + sumaMontos.toFixed(2));
+
+      //Cantidad de correos
+      let total = 0;
+      for (const _ of emails) {
+        total++;
+      }
+      setQtyMails(total);
+
+      //Cantidad aprobadas
+      let aprobadas = 0;
+      for (const email of emails) {
+        if (email.estado.toLowerCase() === "aprobada") {
+          aprobadas++;
+        }
+      }
+      setQtyApproved(aprobadas);
+
+      //Cantidad rechazadas
+      let rechazadas = 0;
+      for (const email of emails) {
+        if (email.estado.toLowerCase() != "aprobada") {
+          rechazadas++;
+        }
+      }
+      setQtyRejected(rechazadas);
+    }
   }, [emails]);
 
+  ///Funcion para actualizar los mails con parametros
   const updateMails = async () => {
     setLoading(true);
     try {
@@ -76,6 +117,24 @@ export default function Dashboard({ session, mails }) {
     } finally {
       setLoading(false);
     }
+  };
+
+  ///Circulos de los rectangulos
+  const CircleTag = ({ name, number, color }) => {
+    return (
+      <div className="rectangle">
+        <div className="flex items-center gap-2 leading-0">
+          <div className={`circle-tag ${color}`}></div>
+          <span className="text-secondary-color">{name}</span>
+        </div>
+
+        {number || number === 0 ? (
+          <div className="font-xl mt-4">{number}</div>
+        ) : (
+          <div className="font-xl mt-4 animate-pulse skeleton">0</div>
+        )}
+      </div>
+    );
   };
 
   ///No session
@@ -158,7 +217,60 @@ export default function Dashboard({ session, mails }) {
           </div>
 
           {/*//---- RECTANGLES INFO ---- */}
-          <div className="rectangles-container"></div>
+          <div className="rectangles-container">
+            <CircleTag
+              name={"Monto Total"}
+              number={totalAmount}
+              color={"circle-bg-amount"}
+            />
+            <CircleTag
+              name={"Cantidad de correos"}
+              number={qtyMails}
+              color={"circle-bg-qty"}
+            />
+            <CircleTag
+              name={"Aprobadas"}
+              number={qtyApproved}
+              color={"circle-bg-approved"}
+            />
+            <CircleTag
+              name={"Rechazadas"}
+              number={qtyRejected}
+              color={"circle-bg-rejected"}
+            />
+          </div>
+
+          {/*//---- TABLE ---- */}
+          <div className="table-container">
+            <Table>
+              <Thead className="table-head ">
+                <Tr>
+                  <Th className="first-th">Comercio</Th>
+                  <Th>Monto</Th>
+                  <Th>Fecha y hora</Th>
+                  <Th>Tipo de compra</Th>
+                  <Th>Estado</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {emails.map((email) => {
+                  return (
+                    <Tr
+                      className="general-padding"
+                      key={email.id}
+                      onClick={() => console.log(email.id)}
+                    >
+                      <Td className="first-th capitalize">{email.comercio}</Td>
+                      <Td>${email.monto}</Td>
+                      <Td>{email.fechaHora}</Td>
+                      <Td>{email.tipo}</Td>
+                      <Td>{email.estado}</Td>
+                    </Tr>
+                  );
+                })}
+              </Tbody>
+            </Table>
+          </div>
         </div>
       </div>
     </>
