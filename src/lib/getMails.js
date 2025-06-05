@@ -65,6 +65,7 @@ export default async function getMails({ accessToken, target, qty }) {
           try {
             const dom = new JSDOM(body);
             const doc = dom.window.document;
+            doc.body.setAttribute("style", "overflow:hidden");
 
             // Ubicamos la informacion de "Fecha y hora" dentro del correo
             const strongs1 = doc.querySelectorAll("strong");
@@ -99,13 +100,35 @@ export default async function getMails({ accessToken, target, qty }) {
               }
             });
 
-            // Ubicamos la informacion de "Tipo de compra y Estado" dentro del correo
-            const strongs4 = doc.querySelectorAll("strong");
+            // Borrar 1
+            const strongs4 = doc.querySelectorAll("a");
             strongs4.forEach((el) => {
-              if (el.textContent.trim() === "Panamá") {
+              if (el.textContent.trim() === "Centro de Ayuda") {
                 const tr = el.closest("tr");
                 if (tr) {
                   tr.id = "final-content";
+                }
+              }
+            });
+
+            // Borrar 2
+            const strongs5 = doc.querySelectorAll("a");
+            strongs5.forEach((el) => {
+              if (el.textContent.trim() === "Comunicate aquí") {
+                const tr = el.closest("tr");
+                if (tr) {
+                  tr.id = "final-content2";
+                }
+              }
+            });
+
+            // Borrar 3
+            const strongs6 = doc.querySelectorAll("strong");
+            strongs6.forEach((el) => {
+              if (el.textContent.trim() === "Panamá") {
+                const tr = el.closest("tr");
+                if (tr) {
+                  tr.id = "final-content3";
                 }
               }
             });
@@ -151,15 +174,37 @@ export default async function getMails({ accessToken, target, qty }) {
               fechaHora = fechaP?.textContent.trim() || "";
             }
 
-            // Borrar el tr que le sigue al id final-content
+            // Borrar todos los tr a partir del id "final-content", incluyendo ese mismo
             const refRowFinal = doc.getElementById("final-content");
-            if (
-              refRowFinal &&
-              refRowFinal.nextElementSibling?.tagName === "TR"
-            ) {
-              refRowFinal.parentNode.removeChild(
-                refRowFinal.nextElementSibling
-              );
+            if (refRowFinal) {
+              let current = refRowFinal;
+              while (current) {
+                const next = current.nextElementSibling;
+                current.remove();
+                current = next?.tagName === "TR" ? next : null;
+              }
+            }
+
+            // Borrar todos los tr a partir del id "final-content2", incluyendo ese mismo
+            const refRowFinal2 = doc.getElementById("final-content2");
+            if (refRowFinal2) {
+              let current = refRowFinal2;
+              while (current) {
+                const next = current.nextElementSibling;
+                current.remove();
+                current = next?.tagName === "TR" ? next : null;
+              }
+            }
+
+            // Borrar todos los tr a partir del id "final-content3", incluyendo ese mismo
+            const refRowFinal3 = doc.getElementById("final-content3");
+            if (refRowFinal3) {
+              let current = refRowFinal3;
+              while (current) {
+                const next = current.nextElementSibling;
+                current.remove();
+                current = next?.tagName === "TR" ? next : null;
+              }
             }
 
             body = doc.documentElement.outerHTML;

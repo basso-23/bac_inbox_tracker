@@ -5,11 +5,27 @@ import { useEffect, useRef, useState } from "react";
 
 import { Table, Thead, Tbody, Tr, Th, Td } from "react-super-responsive-table";
 import { FaAngleDown } from "react-icons/fa6";
+import { IoClose } from "react-icons/io5";
 import { MdSearch } from "react-icons/md";
 import { FiFilter } from "react-icons/fi";
 import { VscSettings } from "react-icons/vsc";
 import { RxUpdate } from "react-icons/rx";
 import { RxCaretSort } from "react-icons/rx";
+import { RiLogoutBoxRLine } from "react-icons/ri";
+import { IoIosInformationCircleOutline } from "react-icons/io";
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 
 /// Componente iframe para renderizar HTML
 function EmailIframe({ html }) {
@@ -29,14 +45,14 @@ function EmailIframe({ html }) {
     <iframe
       ref={iframeRef}
       title="Email Content"
-      className="iframe-container"
       style={{
         width: "100%",
         position: "fixed",
         zIndex: 10,
-        height: "100dvh",
+        height: "600px",
         top: "50%",
         left: "50%",
+        marginTop: "36px",
         transform: "translate(-50%, -50%)",
       }}
     />
@@ -52,7 +68,6 @@ export default function Dashboard({ session, mails }) {
   const [qtyApproved, setQtyApproved] = useState();
   const [qtyRejected, setQtyRejected] = useState();
 
-  const [showIframe, setShowIframe] = useState(false);
   const [currentId, setCurrentId] = useState();
 
   ///Se activa cada vez que se actualiza los mails
@@ -155,10 +170,6 @@ export default function Dashboard({ session, mails }) {
   ///Logged in
   return (
     <>
-      {loading && (
-        <div className="p-4 text-center animate-pulse">Cargando correos...</div>
-      )}
-
       <div className="main-container general-padding">
         {/*//---- HEADER ---- */}
         <div className="header-container">
@@ -169,9 +180,13 @@ export default function Dashboard({ session, mails }) {
 
           {/*//* Right Header */}
           <div className="header-right">
-            <div>options1</div>
-
-            <div>options2</div>
+            <button
+              className="logout-btn transition-all "
+              onClick={() => signOut()}
+            >
+              Cerrar sesión
+              <RiLogoutBoxRLine />
+            </button>
             <div className="separator-vertical"></div>
             <button className="profile-container">
               <div
@@ -246,110 +261,135 @@ export default function Dashboard({ session, mails }) {
 
           {/*//---- TABLE ---- */}
           <div className="table-container">
-            <Table>
-              <Thead className="table-head ">
-                <Tr>
-                  <Th className="first-th">
-                    <div className="table-header">
-                      Comercio
-                      <span className="sort-icon">
-                        <RxCaretSort />
-                      </span>
-                    </div>
-                  </Th>
-                  <Th>
-                    <div className="table-header">
-                      Fecha y hora
-                      <span className="sort-icon">
-                        <RxCaretSort />
-                      </span>
-                    </div>
-                  </Th>
-                  <Th>
-                    <div className="table-header">
-                      Estado
-                      <span className="sort-icon">
-                        <RxCaretSort />
-                      </span>
-                    </div>
-                  </Th>
-                  <Th>
-                    <div className="table-header">
-                      Monto
-                      <span className="sort-icon">
-                        <RxCaretSort />
-                      </span>
-                    </div>
-                  </Th>
-                  <Th>
-                    <div className="table-header">
-                      Tipo de compra
-                      <span className="sort-icon">
-                        <RxCaretSort />
-                      </span>
-                    </div>
-                  </Th>
+            {qtyMails != 0 && !loading ? (
+              <Table>
+                <Thead className="table-head ">
+                  <Tr>
+                    <Th className="first-th">
+                      <div className="table-header">
+                        Comercio
+                        <span className="sort-icon">
+                          <RxCaretSort />
+                        </span>
+                      </div>
+                    </Th>
+                    <Th>
+                      <div className="table-header">
+                        Fecha y hora
+                        <span className="sort-icon">
+                          <RxCaretSort />
+                        </span>
+                      </div>
+                    </Th>
+                    <Th>
+                      <div className="table-header">
+                        Estado
+                        <span className="sort-icon">
+                          <RxCaretSort />
+                        </span>
+                      </div>
+                    </Th>
+                    <Th>
+                      <div className="table-header">
+                        Monto
+                        <span className="sort-icon">
+                          <RxCaretSort />
+                        </span>
+                      </div>
+                    </Th>
+                    <Th>
+                      <div className="table-header">
+                        Tipo de compra
+                        <span className="sort-icon">
+                          <RxCaretSort />
+                        </span>
+                      </div>
+                    </Th>
+                    <Th>
+                      <div className="table-header">Info</div>
+                    </Th>
+                  </Tr>
+                </Thead>
+                <Tbody className="table-body">
+                  {emails.map((email) => {
+                    return (
+                      <Tr className="general-padding" key={email.id}>
+                        <Td className="first-th capitalize">
+                          {email.comercio}
+                        </Td>
+                        <Td>{email.fechaHora}</Td>
+                        <Td>
+                          {email.estado.toLowerCase() === "aprobada" ? (
+                            <div className="status-approved">Completada</div>
+                          ) : (
+                            <div className="status-rejected">Rechazada</div>
+                          )}
+                        </Td>
+                        <Td>${email.monto}</Td>
+                        <Td>{email.tipo}</Td>
+                        <Td>
+                          {/*//---- RENDER DEL BODY DE LOS CORREOS ---- */}
+                          <div className="iframe-container">
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <button
+                                  className="show-mail-btn transition-all"
+                                  onClick={() => {
+                                    setCurrentId(email.id);
+                                  }}
+                                >
+                                  Ver correo
+                                </button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle asChild>
+                                    <div className="modal-header">
+                                      <div className="flex gap-3">
+                                        <div className="gmail-icon-container">
+                                          <div className="gmail-icon"></div>
+                                        </div>
 
-                  <Th>
-                    <div className="table-header">Info</div>
-                  </Th>
-                </Tr>
-              </Thead>
-              <Tbody className="table-body">
-                {emails.map((email) => {
-                  return (
-                    <Tr className="general-padding" key={email.id}>
-                      <Td className="first-th capitalize">{email.comercio}</Td>
-                      <Td>{email.fechaHora}</Td>
-                      <Td>
-                        {email.estado.toLowerCase() === "aprobada" ? (
-                          <div className="status-approved">Completada</div>
-                        ) : (
-                          <div className="status-rejected">Rechazada</div>
-                        )}
-                      </Td>
-                      <Td>${email.monto}</Td>
-                      <Td>{email.tipo}</Td>
-                      <Td>
-                        <button
-                          className="show-mail-btn transition-all"
-                          onClick={() => {
-                            setCurrentId(email.id);
-                            setShowIframe(true);
-                          }}
-                        >
-                          Ver correo
-                        </button>
-                      </Td>
-                    </Tr>
-                  );
-                })}
-              </Tbody>
-            </Table>
+                                        <div className=" flex justify-center flex-col leading-5">
+                                          <div className="gmail-title">
+                                            Gmail
+                                          </div>
+                                          <a className="gmail-subtitle">
+                                            Google cloud API
+                                            <span>
+                                              <IoIosInformationCircleOutline />
+                                            </span>
+                                          </a>
+                                        </div>
+                                      </div>
+                                      <AlertDialogCancel asChild>
+                                        <button className="btn-secondary close-iframe-btn leading-0">
+                                          <IoClose />
+                                        </button>
+                                      </AlertDialogCancel>
+                                    </div>
+                                  </AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    <EmailIframe html={email.body} />
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter></AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </Td>
+                      </Tr>
+                    );
+                  })}
+                </Tbody>
+              </Table>
+            ) : (
+              <div className="p-4 text-center animate-pulse">
+                Cargando correos...
+              </div>
+            )}
           </div>
         </div>
-
-        {/*//---- RENDER DEL BODY DE LOS CORREOS ---- */}
-
-        {emails.map((email) => {
-          return (
-            <div key={email.id}>
-              {currentId === email.id && showIframe && (
-                <div className="iframe-container">
-                  <button
-                    className="close-iframe-btn"
-                    onClick={() => {
-                      setShowIframe(false);
-                    }}
-                  >
-                    Cerrar
-                  </button>
-                  <EmailIframe html={email.body} />
-                </div>
-              )}
-            </div>
-          );
-        })}
       </div>
     </>
   );
