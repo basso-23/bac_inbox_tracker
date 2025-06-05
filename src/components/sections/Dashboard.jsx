@@ -5,6 +5,10 @@ import { useEffect, useRef, useState } from "react";
 
 import { Table, Thead, Tbody, Tr, Th, Td } from "react-super-responsive-table";
 import { FaAngleDown } from "react-icons/fa6";
+import { MdSearch } from "react-icons/md";
+import { FiFilter } from "react-icons/fi";
+import { VscSettings } from "react-icons/vsc";
+import { RxUpdate } from "react-icons/rx";
 
 /// Componente iframe para renderizar HTML
 function EmailIframe({ html }) {
@@ -56,7 +60,7 @@ export default function Dashboard({ session, mails }) {
         },
         body: JSON.stringify({
           target: "notificacion_pa@pa.bac.net",
-          qty: 500,
+          qty: 5,
         }),
       });
 
@@ -88,11 +92,9 @@ export default function Dashboard({ session, mails }) {
   ///Logged in
   return (
     <>
-      {/*{loading && (
-          <div className="p-4 text-center font-semibold animate-pulse">
-            Cargando correos...
-          </div>
-        )}*/}
+      {loading && (
+        <div className="p-4 text-center animate-pulse">Cargando correos...</div>
+      )}
 
       <div className="main-container general-padding">
         {/*//---- HEADER ---- */}
@@ -107,7 +109,7 @@ export default function Dashboard({ session, mails }) {
             <div>options1</div>
 
             <div>options2</div>
-
+            <div className="separator-vertical"></div>
             <button className="profile-container">
               <div
                 className="profile-image"
@@ -126,13 +128,32 @@ export default function Dashboard({ session, mails }) {
             {/*//* Actions left */}
             <div className="actions-left">
               <div className="font-large tracking-tight">Transacciones</div>
+              <div className="searchbar-container">
+                <input
+                  type="text"
+                  placeholder="Buscar comercio"
+                  className="searchbar-input"
+                />
+                <div className="searchbar-icon">
+                  <MdSearch />
+                </div>
+              </div>
             </div>
 
             {/*//* Actions left */}
             <div className="actions-right">
-              <div>button1</div>
-              <div>button2</div>
-              <div>button3</div>
+              <button className="btn-secondary">
+                <FiFilter />
+                Filtros
+              </button>
+              <button className="btn-secondary">
+                <VscSettings />
+                Parámetros
+              </button>
+              <button className="btn-primary" onClick={updateMails}>
+                <RxUpdate />
+                Actualizar
+              </button>
             </div>
           </div>
 

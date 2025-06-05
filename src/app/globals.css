@@ -145,7 +145,6 @@
   min-height: 100dvh;
   width: 100%;
   padding-top: 32px;
-  padding-bottom: 32px;
   display: flex;
   flex-direction: column;
 }
@@ -167,17 +166,23 @@
   gap: 20px;
 }
 
+.separator-vertical {
+  background-color: #ededed;
+  width: 2px;
+  height: 20px;
+}
+
 .profile-container {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: 4px;
 
   background-color: #ffffff;
   border: 2px solid #ededed;
   cursor: pointer;
   border-radius: 8px;
-  padding: 1px 6px;
+  padding: 2px 6px;
   &:hover {
     background-color: #ededed;
   }
@@ -192,17 +197,18 @@
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;
+  border: 1px solid #cacaca;
 }
 
 .content-container {
   width: 100%;
   flex-grow: 1;
   border: 2px solid #ededed;
-  border-radius: 16px;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
   margin-top: 36px;
   background-color: #ffffff;
   overflow: auto;
-  max-height: 80dvh;
   padding-top: 32px;
   padding-bottom: 32px;
 }
@@ -216,13 +222,44 @@
 .actions-left {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 24px;
 }
 
 .actions-right {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.searchbar-input {
+  background-color: white;
+  border: 1px solid #d7d7d7;
+  padding: 10px 14px;
+  padding-left: 34px;
+  border-radius: 8px;
+  color: #909090;
+  line-height: 1;
+  width: 250px;
+  outline: none;
+  color: #3b3b3b;
+}
+
+.searchbar-container {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.searchbar-icon {
+  aspect-ratio: 1;
+  width: 30px;
+  align-items: center;
+  font-size: 20px;
+  justify-content: center;
+  position: absolute;
+  display: flex;
+  left: 4px;
+  color: #3b3b3b;
 }
 
 /** Fonts **/
@@ -283,22 +320,30 @@
 /** Buttons **/
 
 .btn-primary {
-  background-color: #313131;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  background-color: #272727;
   color: #ffffff;
   cursor: pointer;
-  padding: 12px 20px;
-  border-radius: 10px;
+  padding: 10px 20px;
+  border-radius: 8px;
   &:hover {
-    background-color: #3c3c3c;
+    background-color: #353535;
   }
 }
 
 .btn-secondary {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
   background-color: #ffffff;
   border: 2px solid #ededed;
   cursor: pointer;
-  padding: 12px 20px;
-  border-radius: 10px;
+  padding: 10px 20px;
+  border-radius: 8px;
   &:hover {
     background-color: #ededed;
   }
