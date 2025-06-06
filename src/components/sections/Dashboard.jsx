@@ -61,6 +61,8 @@ function EmailIframe({ html }) {
 
 export default function Dashboard({ session, mails }) {
   const [emails, setEmails] = useState(mails);
+  const [filteredEmails, setFilteredEmails] = useState(mails); // correos filtrados
+  const [searchTerm, setSearchTerm] = useState(""); // texto de búsqueda
   const [loading, setLoading] = useState(false);
 
   const [totalAmount, setTotalAmount] = useState();
@@ -107,6 +109,31 @@ export default function Dashboard({ session, mails }) {
       }
       setQtyRejected(rechazadas);
     }
+  }, [emails]);
+
+  ///Se activa cuando cambia el texto del buscador, con delay de 2 segundos
+  useEffect(() => {
+    if (searchTerm.trim() === "") {
+      setFilteredEmails(emails); // mostrar todos sin activar loading
+      return;
+    }
+
+    setLoading(true); // activa loading solo si hay texto
+
+    const timeout = setTimeout(() => {
+      const filtered = emails.filter((email) =>
+        email.comercio.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredEmails(filtered);
+      setLoading(false); // desactiva loading al finalizar
+    }, 1000);
+
+    return () => clearTimeout(timeout);
+  }, [searchTerm, emails]);
+
+  ///Actualizar correos filtrados si llegan nuevos
+  useEffect(() => {
+    setFilteredEmails(emails);
   }, [emails]);
 
   ///Funcion para actualizar los mails con parametros
@@ -211,6 +238,8 @@ export default function Dashboard({ session, mails }) {
                   type="text"
                   placeholder="Buscar comercio"
                   className="searchbar-input"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                 />
                 <div className="searchbar-icon">
                   <MdSearch />
@@ -311,7 +340,7 @@ export default function Dashboard({ session, mails }) {
                   </Tr>
                 </Thead>
                 <Tbody className="table-body">
-                  {emails.map((email) => {
+                  {filteredEmails.map((email) => {
                     return (
                       <Tr className="general-padding" key={email.id}>
                         <Td className="first-th capitalize">
