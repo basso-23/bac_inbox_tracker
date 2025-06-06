@@ -7,13 +7,16 @@ import getMails from "@/lib/getMails";
 export default async function Home() {
   const session = await getServerSession(authOptions);
 
+  const defaultTarget = process.env.NEXT_PUBLIC_DEFAULT_TARGET;
+  const defaultQty = process.env.NEXT_PUBLIC_DEFAULT_QTY;
+
   let mails = [];
 
   if (session) {
     mails = await getMails({
       accessToken: session.accessToken,
-      target: "notificacion_pa@pa.bac.net",
-      qty: 15,
+      target: defaultTarget,
+      qty: defaultQty,
     });
   }
 

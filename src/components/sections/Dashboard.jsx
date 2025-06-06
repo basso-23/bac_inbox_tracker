@@ -13,6 +13,7 @@ import { RxUpdate } from "react-icons/rx";
 import { RxCaretSort } from "react-icons/rx";
 import { RiLogoutBoxRLine } from "react-icons/ri";
 import { FaArrowRight } from "react-icons/fa6";
+import { HiOutlineTrash } from "react-icons/hi2";
 
 import {
   AlertDialog,
@@ -65,6 +66,9 @@ export default function Dashboard({ session, mails }) {
   const [searchTerm, setSearchTerm] = useState(""); // texto de búsqueda
   const [loading, setLoading] = useState(false);
 
+  const [firstLoad, setFirstLoad] = useState(false);
+  const [resetSearch, setResetSearch] = useState(false);
+
   const [totalAmount, setTotalAmount] = useState();
   const [qtyMails, setQtyMails] = useState();
   const [qtyApproved, setQtyApproved] = useState();
@@ -72,28 +76,32 @@ export default function Dashboard({ session, mails }) {
 
   const [currentId, setCurrentId] = useState();
 
+  const defaultTarget = process.env.NEXT_PUBLIC_DEFAULT_TARGET;
+  const defaultQty = process.env.NEXT_PUBLIC_DEFAULT_QTY;
+
   ///Se activa cada vez que se actualiza los mails
   useEffect(() => {
     console.log(emails);
+    //console.log(defaultTarget);
 
     if (emails) {
       //Monto total
       let sumaMontos = 0;
-      for (const email of emails) {
+      for (const email of filteredEmails) {
         sumaMontos += parseFloat(email.monto);
       }
       setTotalAmount("$" + sumaMontos.toFixed(2));
 
       //Cantidad de correos
       let total = 0;
-      for (const _ of emails) {
+      for (const _ of filteredEmails) {
         total++;
       }
       setQtyMails(total);
 
       //Cantidad aprobadas
       let aprobadas = 0;
-      for (const email of emails) {
+      for (const email of filteredEmails) {
         if (email.estado.toLowerCase() === "aprobada") {
           aprobadas++;
         }
@@ -102,33 +110,37 @@ export default function Dashboard({ session, mails }) {
 
       //Cantidad rechazadas
       let rechazadas = 0;
-      for (const email of emails) {
+      for (const email of filteredEmails) {
         if (email.estado.toLowerCase() != "aprobada") {
           rechazadas++;
         }
       }
       setQtyRejected(rechazadas);
     }
-  }, [emails]);
+  }, [emails, filteredEmails]);
 
   ///Se activa cuando cambia el texto del buscador, con delay de 2 segundos
   useEffect(() => {
-    if (searchTerm.trim() === "") {
-      setFilteredEmails(emails); // mostrar todos sin activar loading
-      return;
+    if (!resetSearch) {
+      if (firstLoad) {
+        setLoading(true); // activa el loading inmediatamente al escribir
+      }
+      const timeout = setTimeout(() => {
+        if (searchTerm.trim() === "") {
+          setFilteredEmails(emails);
+        } else {
+          const filtered = emails.filter((email) =>
+            email.comercio.toLowerCase().includes(searchTerm.toLowerCase())
+          );
+          setFilteredEmails(filtered);
+        }
+
+        setLoading(false); // desactiva el loading después de filtrar
+        setFirstLoad(true);
+      }, 500);
+
+      return () => clearTimeout(timeout);
     }
-
-    setLoading(true); // activa loading solo si hay texto
-
-    const timeout = setTimeout(() => {
-      const filtered = emails.filter((email) =>
-        email.comercio.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setFilteredEmails(filtered);
-      setLoading(false); // desactiva loading al finalizar
-    }, 1000);
-
-    return () => clearTimeout(timeout);
   }, [searchTerm, emails]);
 
   ///Actualizar correos filtrados si llegan nuevos
@@ -137,8 +149,12 @@ export default function Dashboard({ session, mails }) {
   }, [emails]);
 
   ///Funcion para actualizar los mails con parametros
-  const updateMails = async () => {
+  const updateMails = async (target, qty) => {
     setLoading(true);
+    setFirstLoad(false);
+    setResetSearch(true);
+    setSearchTerm("");
+
     try {
       const res = await fetch("/api/get-mails", {
         method: "POST",
@@ -146,8 +162,8 @@ export default function Dashboard({ session, mails }) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          target: "notificacion_pa@pa.bac.net",
-          qty: 5,
+          target: target,
+          qty: qty,
         }),
       });
 
@@ -161,8 +177,15 @@ export default function Dashboard({ session, mails }) {
     } catch (error) {
       console.error("Error en fetch:", error);
     } finally {
+      setResetSearch(false);
       setLoading(false);
     }
+  };
+
+  ///Limpiar filtros
+  const clearFilters = () => {
+    setLoading(true);
+    setSearchTerm("");
   };
 
   ///Circulos de los rectangulos
@@ -249,6 +272,10 @@ export default function Dashboard({ session, mails }) {
 
             {/*//* Actions left */}
             <div className="actions-right">
+              <button className="btn-secondary" onClick={clearFilters}>
+                <HiOutlineTrash />
+                Limpiar
+              </button>
               <button className="btn-secondary">
                 <FiFilter />
                 Filtros
@@ -257,7 +284,10 @@ export default function Dashboard({ session, mails }) {
                 <VscSettings />
                 Parámetros
               </button>
-              <button className="btn-primary" onClick={updateMails}>
+              <button
+                className="btn-primary"
+                onClick={() => updateMails(defaultTarget, defaultQty)}
+              >
                 <RxUpdate />
                 Actualizar
               </button>
@@ -419,9 +449,15 @@ export default function Dashboard({ session, mails }) {
                 </Tbody>
               </Table>
             ) : (
-              <div className="p-4 text-center animate-pulse">
-                Cargando correos...
-              </div>
+              <>
+                {qtyMails || loading ? (
+                  <div className="p-4 text-center animate-pulse">
+                    Cargando correos...
+                  </div>
+                ) : (
+                  <div>no hay correos</div>
+                )}
+              </>
             )}
           </div>
         </div>
