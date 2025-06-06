@@ -432,15 +432,18 @@
 .gmail-title {
   font-size: 14px;
   font-weight: 500;
-
 }
 
 .gmail-subtitle {
   font-size: 14px;
   color: #7d7d7d;
-    display: flex;
+  display: flex;
   align-items: center;
   gap: 4px;
+  cursor: pointer;
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
 /** Fonts **/

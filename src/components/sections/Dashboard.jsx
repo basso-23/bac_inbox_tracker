@@ -12,7 +12,7 @@ import { VscSettings } from "react-icons/vsc";
 import { RxUpdate } from "react-icons/rx";
 import { RxCaretSort } from "react-icons/rx";
 import { RiLogoutBoxRLine } from "react-icons/ri";
-import { IoIosInformationCircleOutline } from "react-icons/io";
+import { FaArrowRight } from "react-icons/fa6";
 
 import {
   AlertDialog,
@@ -52,7 +52,7 @@ function EmailIframe({ html }) {
         height: "600px",
         top: "50%",
         left: "50%",
-        marginTop: "36px",
+        marginTop: "28px",
         transform: "translate(-50%, -50%)",
       }}
     />
@@ -354,10 +354,16 @@ export default function Dashboard({ session, mails }) {
                                           <div className="gmail-title">
                                             Gmail
                                           </div>
-                                          <a className="gmail-subtitle">
+                                          <a
+                                            className="gmail-subtitle"
+                                            href={
+                                              "https://cloud.google.com/?hl=es"
+                                            }
+                                            target="_blank"
+                                          >
                                             Google cloud API
                                             <span>
-                                              <IoIosInformationCircleOutline />
+                                              <FaArrowRight />
                                             </span>
                                           </a>
                                         </div>
