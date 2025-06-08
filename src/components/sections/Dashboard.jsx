@@ -15,6 +15,9 @@ import { RiLogoutBoxRLine } from "react-icons/ri";
 import { FaArrowRight } from "react-icons/fa6";
 import { HiOutlineTrash } from "react-icons/hi2";
 
+import Lottie from "lottie-react";
+import NoFounded from "../../../public/lottie/animation-no-founded";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -451,11 +454,29 @@ export default function Dashboard({ session, mails }) {
             ) : (
               <>
                 {qtyMails || loading ? (
-                  <div className="p-4 text-center animate-pulse">
+                  <div className="p-4 text-center animate-pulse text-secondary-color">
                     Cargando correos...
                   </div>
                 ) : (
-                  <div>no hay correos</div>
+                  <div className=" m-auto flex items-center p-4 flex-col">
+                    <div className="lottie-notfound">
+                      <Lottie animationData={NoFounded} loop={true} />
+                    </div>
+                    <div className=" font-medium">
+                      No se encontraron resultados
+                    </div>
+                    <div className="text-secondary-color notfound-subtitle">
+                      Intenta con otra búsqueda o limpia los filtros y empecemos
+                      de nuevo
+                    </div>
+                    <button
+                      className="btn-primary mt-6 w-[125px]"
+                      onClick={clearFilters}
+                    >
+                      <HiOutlineTrash />
+                      Limpiar
+                    </button>
+                  </div>
                 )}
               </>
             )}

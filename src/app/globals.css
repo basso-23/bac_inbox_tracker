@@ -446,6 +446,17 @@
   }
 }
 
+.lottie-notfound {
+  aspect-ratio: 1/1;
+  height: 200px;
+}
+
+.notfound-subtitle {
+  width: 300px;
+  text-align: center;
+  margin-top: 4px;
+}
+
 /** Fonts **/
 
 .font-general {
