@@ -18,6 +18,7 @@ import { HiOutlineTrash } from "react-icons/hi2";
 import Lottie from "lottie-react";
 import NoFounded from "../../../public/lottie/animation-no-founded";
 
+import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,7 +30,20 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuPortal,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 /// Componente iframe para renderizar HTML
 function EmailIframe({ html }) {
@@ -187,8 +201,10 @@ export default function Dashboard({ session, mails }) {
 
   ///Limpiar filtros
   const clearFilters = () => {
-    setLoading(true);
-    setSearchTerm("");
+    if (searchTerm != "") {
+      setLoading(true);
+      setSearchTerm("");
+    }
   };
 
   ///Circulos de los rectangulos
@@ -223,42 +239,62 @@ export default function Dashboard({ session, mails }) {
   ///Logged in
   return (
     <>
-      <div className="main-container general-padding">
+      <div className="main-container">
         {/*//---- HEADER ---- */}
-        <div className="header-container">
-          {/*//* Name */}
-          <div className="font-large tracking-tight">
-            Bienvenido, {session.user.name}
+        <div className="header-container general-padding">
+          {/*//* Left Header */}
+          <div className="flex items-center gap-3">
+            <div
+              className="logo"
+              style={{ backgroundImage: `url(logo-small.svg` }}
+            ></div>
+
+            <div className="font-large font-semibold">BAC Mail Checker</div>
           </div>
 
           {/*//* Right Header */}
-          <div className="header-right">
-            <button
-              className="logout-btn transition-all "
-              onClick={() => signOut()}
-            >
-              Cerrar sesión
-              <RiLogoutBoxRLine />
-            </button>
-            <div className="separator-vertical"></div>
-            <button className="profile-container">
-              <div
-                className="profile-image"
-                style={{ backgroundImage: `url(${session.user.image})` }}
-              ></div>
-              <div>
-                <FaAngleDown />
-              </div>
-            </button>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="header-right">
+                <div
+                  className="profile-image"
+                  style={{ backgroundImage: `url(${session.user.image})` }}
+                ></div>
+
+                <div>
+                  <div className="text-primary-color font-medium">
+                    {session.user.name}
+                  </div>
+                  <div className="text-secondary-color leading-3 text-[12px] font-medium">
+                    Conectado
+                  </div>
+                </div>
+                <div>
+                  <FaAngleDown />
+                </div>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56 mr-10" align="start">
+              <DropdownMenuGroup>
+                <DropdownMenuItem asChild>
+                  <button
+                    className="logout-btn transition-all text-primary-color"
+                    onClick={() => signOut()}
+                  >
+                    Cerrar sesión
+                    <RiLogoutBoxRLine />
+                  </button>
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
-        <div className="content-container general-padding">
+        <div className="content-container general-padding screen-width">
           {/*//---- ACTIONS ---- */}
           <div className="actions-container">
             {/*//* Actions left */}
             <div className="actions-left">
-              <div className="font-large tracking-tight">Transacciones</div>
               <div className="searchbar-container">
                 <input
                   type="text"
