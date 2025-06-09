@@ -84,7 +84,6 @@ export default function Dashboard({ session, mails }) {
   const [qtyApproved, setQtyApproved] = useState();
   const [qtyRejected, setQtyRejected] = useState();
 
-  const [currentId, setCurrentId] = useState();
   const [selectedFilter, setSelectedFilter] = useState("más recientes");
 
   const defaultTarget = process.env.NEXT_PUBLIC_DEFAULT_TARGET;
@@ -396,7 +395,11 @@ export default function Dashboard({ session, mails }) {
                 className="btn-primary"
                 onClick={() => updateMails(defaultTarget, defaultQty)}
               >
-                <RxUpdate />
+                <div
+                  className={`${loading ? "animate-spin transition-all" : ""}`}
+                >
+                  <RxUpdate />
+                </div>
                 Actualizar
               </button>
             </div>
@@ -466,12 +469,7 @@ export default function Dashboard({ session, mails }) {
                           <div className="iframe-container">
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
-                                <button
-                                  className="show-mail-btn transition-all"
-                                  onClick={() => {
-                                    setCurrentId(email.id);
-                                  }}
-                                >
+                                <button className="show-mail-btn transition-all">
                                   Ver correo
                                 </button>
                               </AlertDialogTrigger>
