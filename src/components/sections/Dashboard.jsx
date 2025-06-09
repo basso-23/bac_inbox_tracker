@@ -14,14 +14,14 @@ import { RxCaretSort } from "react-icons/rx";
 import { RiLogoutBoxRLine } from "react-icons/ri";
 import { FaArrowRight } from "react-icons/fa6";
 import { HiOutlineTrash } from "react-icons/hi2";
+import { GoCheckCircleFill } from "react-icons/go";
+import { FiCircle } from "react-icons/fi";
 
 import Lottie from "lottie-react";
 import NoFounded from "../../../public/lottie/animation-no-founded";
 
-import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -35,13 +35,6 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuPortal,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
@@ -92,9 +85,12 @@ export default function Dashboard({ session, mails }) {
   const [qtyRejected, setQtyRejected] = useState();
 
   const [currentId, setCurrentId] = useState();
+  const [selectedFilter, setSelectedFilter] = useState("más recientes");
 
   const defaultTarget = process.env.NEXT_PUBLIC_DEFAULT_TARGET;
   const defaultQty = process.env.NEXT_PUBLIC_DEFAULT_QTY;
+
+  //---- FUNCIONES ---- */
 
   ///Se activa cada vez que se actualiza los mails
   useEffect(() => {
@@ -136,11 +132,12 @@ export default function Dashboard({ session, mails }) {
     }
   }, [emails, filteredEmails]);
 
-  ///Se activa cuando cambia el texto del buscador, con delay de 2 segundos
+  ///Se activa cuando cambia el texto del buscador, con delay de 500 milisegundos
   useEffect(() => {
     if (!resetSearch) {
       if (firstLoad) {
         setLoading(true); // activa el loading inmediatamente al escribir
+        setSelectedFilter("");
       }
       const timeout = setTimeout(() => {
         if (searchTerm.trim() === "") {
@@ -151,7 +148,6 @@ export default function Dashboard({ session, mails }) {
           );
           setFilteredEmails(filtered);
         }
-
         setLoading(false); // desactiva el loading después de filtrar
         setFirstLoad(true);
       }, 500);
@@ -205,10 +201,37 @@ export default function Dashboard({ session, mails }) {
       setLoading(true);
       setSearchTerm("");
     }
+    selectFilter("más recientes");
   };
 
-  ///Circulos de los rectangulos
-  const CircleTag = ({ name, number, color }) => {
+  ///Seleccionar filtro
+  const selectFilter = (filter) => {
+    let sortedEmails = [...filteredEmails];
+
+    setTimeout(() => {
+      if (filter === "más recientes") {
+        sortedEmails.sort(
+          (a, b) => new Date(b.fechaHora) - new Date(a.fechaHora)
+        );
+      } else if (filter === "más antiguos") {
+        sortedEmails.sort(
+          (a, b) => new Date(a.fechaHora) - new Date(b.fechaHora)
+        );
+      } else if (filter === "monto ascendente") {
+        sortedEmails.sort((a, b) => parseFloat(a.monto) - parseFloat(b.monto));
+      } else if (filter === "monto descendente") {
+        sortedEmails.sort((a, b) => parseFloat(b.monto) - parseFloat(a.monto));
+      }
+
+      setSelectedFilter(filter);
+      setFilteredEmails(sortedEmails);
+    }, 0);
+  };
+
+  //---- COMPONENTES PARA RENDERIZAR ---- */
+
+  ///Rectangulos con info
+  const Rectangles = ({ name, number, color }) => {
     return (
       <div className="rectangle">
         <div className="flex items-center gap-2 leading-0">
@@ -225,7 +248,41 @@ export default function Dashboard({ session, mails }) {
     );
   };
 
-  ///No session
+  ///Headers de la tabla
+  const ThTable = ({ name, icon, style }) => {
+    return (
+      <Th className={`${style}`}>
+        <div className="table-header">
+          {name}
+          <span className="sort-icon">{icon}</span>
+        </div>
+      </Th>
+    );
+  };
+
+  ///Menu items for dropdown
+  const MenuItems = ({ name }) => {
+    let nameLower = name.toLowerCase();
+    return (
+      <DropdownMenuItem asChild>
+        <button
+          className="logout-btn transition-all text-primary-color"
+          onClick={() => selectFilter(nameLower)}
+        >
+          {name}
+          {nameLower === selectedFilter ? (
+            <div className="text-black">
+              <GoCheckCircleFill />
+            </div>
+          ) : (
+            <FiCircle />
+          )}
+        </button>
+      </DropdownMenuItem>
+    );
+  };
+
+  ///No session screen
   if (!session) {
     return (
       <div className="flex justify-center p-8">
@@ -236,7 +293,7 @@ export default function Dashboard({ session, mails }) {
     );
   }
 
-  ///Logged in
+  ///Logged in screen
   return (
     <>
       <div className="main-container">
@@ -315,10 +372,22 @@ export default function Dashboard({ session, mails }) {
                 <HiOutlineTrash />
                 Limpiar
               </button>
-              <button className="btn-secondary">
-                <FiFilter />
-                Filtros
-              </button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="btn-secondary">
+                    <FiFilter />
+                    Filtros
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="start">
+                  <DropdownMenuGroup>
+                    <MenuItems name={"Más recientes"} />
+                    <MenuItems name={"Más antiguos"} />
+                    <MenuItems name={"Monto descendente"} />
+                    <MenuItems name={"Monto ascendente"} />
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <button className="btn-secondary">
                 <VscSettings />
                 Parámetros
@@ -335,22 +404,22 @@ export default function Dashboard({ session, mails }) {
 
           {/*//---- RECTANGLES INFO ---- */}
           <div className="rectangles-container">
-            <CircleTag
+            <Rectangles
               name={"Monto Total"}
               number={totalAmount}
               color={"circle-bg-amount"}
             />
-            <CircleTag
+            <Rectangles
               name={"Cantidad de correos"}
               number={qtyMails}
               color={"circle-bg-qty"}
             />
-            <CircleTag
+            <Rectangles
               name={"Completadas"}
               number={qtyApproved}
               color={"circle-bg-approved"}
             />
-            <CircleTag
+            <Rectangles
               name={"Rechazadas"}
               number={qtyRejected}
               color={"circle-bg-rejected"}
@@ -363,49 +432,16 @@ export default function Dashboard({ session, mails }) {
               <Table>
                 <Thead className="table-head ">
                   <Tr>
-                    <Th className="first-th">
-                      <div className="table-header">
-                        Comercio
-                        <span className="sort-icon">
-                          <RxCaretSort />
-                        </span>
-                      </div>
-                    </Th>
-                    <Th>
-                      <div className="table-header">
-                        Fecha y hora
-                        <span className="sort-icon">
-                          <RxCaretSort />
-                        </span>
-                      </div>
-                    </Th>
-                    <Th>
-                      <div className="table-header">
-                        Estado
-                        <span className="sort-icon">
-                          <RxCaretSort />
-                        </span>
-                      </div>
-                    </Th>
-                    <Th>
-                      <div className="table-header">
-                        Monto
-                        <span className="sort-icon">
-                          <RxCaretSort />
-                        </span>
-                      </div>
-                    </Th>
-                    <Th>
-                      <div className="table-header">
-                        Tipo de compra
-                        <span className="sort-icon">
-                          <RxCaretSort />
-                        </span>
-                      </div>
-                    </Th>
-                    <Th>
-                      <div className="table-header">Info</div>
-                    </Th>
+                    <ThTable
+                      name={"Comercio"}
+                      icon={<RxCaretSort />}
+                      style={"first-th"}
+                    />
+                    <ThTable name={"Fecha y hora"} icon={<RxCaretSort />} />
+                    <ThTable name={"Estado"} icon={<RxCaretSort />} />
+                    <ThTable name={"Monto"} icon={<RxCaretSort />} />
+                    <ThTable name={"Tipo de compra"} icon={<RxCaretSort />} />
+                    <ThTable name={"Info"} />
                   </Tr>
                 </Thead>
                 <Tbody className="table-body">

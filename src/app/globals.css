@@ -252,7 +252,7 @@
 .searchbar-input {
   background-color: white;
   border: 2px solid #ededed;
-  padding: 10px 14px;
+  padding: 8px 14px;
   padding-left: 34px;
   border-radius: 8px;
   color: #909090;
@@ -541,7 +541,7 @@
   background-color: #272727;
   color: #ffffff;
   cursor: pointer;
-  padding: 10px 20px;
+  padding: 8px 20px;
   border-radius: 8px;
   &:hover {
     background-color: #353535;
@@ -556,7 +556,7 @@
   background-color: #ffffff;
   border: 2px solid #ededed;
   cursor: pointer;
-  padding: 10px 20px;
+  padding: 8px 20px;
   border-radius: 8px;
   font-weight: 400;
   &:hover {
