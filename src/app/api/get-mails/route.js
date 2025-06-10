@@ -12,12 +12,41 @@ export async function POST(req) {
   }
 
   try {
-    const { target, qty } = await req.json();
+    const { target, qty, startDate, endDate } = await req.json();
+
+    // Validación básica de fechas si están presentes
+    if (startDate && isNaN(Date.parse(startDate))) {
+      return new Response(
+        JSON.stringify({ error: "Fecha de inicio inválida" }),
+        {
+          status: 400,
+        }
+      );
+    }
+
+    if (endDate && isNaN(Date.parse(endDate))) {
+      return new Response(JSON.stringify({ error: "Fecha final inválida" }), {
+        status: 400,
+      });
+    }
+
+    if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
+      return new Response(
+        JSON.stringify({
+          error: "La fecha de inicio no puede ser posterior a la fecha final",
+        }),
+        {
+          status: 400,
+        }
+      );
+    }
 
     const mails = await getMails({
       accessToken: session.accessToken,
-      target: target,
-      qty: qty,
+      target,
+      qty,
+      startDate,
+      endDate,
     });
 
     return new Response(JSON.stringify({ mails }), { status: 200 });

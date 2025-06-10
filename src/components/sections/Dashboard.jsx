@@ -17,6 +17,9 @@ import { HiOutlineTrash } from "react-icons/hi2";
 import { GoCheckCircleFill } from "react-icons/go";
 import { FiCircle } from "react-icons/fi";
 
+import getCurrentMonth from "@/lib/getCurrentMonth";
+import getMonthRange from "@/lib/getMonthRange";
+
 import Lottie from "lottie-react";
 import NoFounded from "../../../public/lottie/animation-no-founded";
 
@@ -70,7 +73,12 @@ function EmailIframe({ html }) {
   );
 }
 
-export default function Dashboard({ session, mails }) {
+export default function Dashboard({
+  session,
+  mails,
+  currentMonth,
+  currentRange,
+}) {
   const [emails, setEmails] = useState(mails);
   const [filteredEmails, setFilteredEmails] = useState(mails); // correos filtrados
   const [searchTerm, setSearchTerm] = useState(""); // texto de búsqueda
@@ -85,6 +93,7 @@ export default function Dashboard({ session, mails }) {
   const [qtyRejected, setQtyRejected] = useState();
 
   const [selectedFilter, setSelectedFilter] = useState("más recientes");
+  const [selectedMonth, setSelectedMonth] = useState(currentMonth);
 
   const defaultTarget = process.env.NEXT_PUBLIC_DEFAULT_TARGET;
   const defaultQty = process.env.NEXT_PUBLIC_DEFAULT_QTY;
@@ -129,7 +138,7 @@ export default function Dashboard({ session, mails }) {
       }
       setQtyRejected(rechazadas);
     }
-  }, [emails, filteredEmails]);
+  }, [filteredEmails]);
 
   ///Se activa cuando cambia el texto del buscador, con delay de 500 milisegundos
   useEffect(() => {
@@ -161,11 +170,12 @@ export default function Dashboard({ session, mails }) {
   }, [emails]);
 
   ///Funcion para actualizar los mails con parametros
-  const updateMails = async (target, qty) => {
+  const updateMails = async (target, qty, rangeDate) => {
     setLoading(true);
     setFirstLoad(false);
     setResetSearch(true);
     setSearchTerm("");
+    selectFilter("más recientes");
 
     try {
       const res = await fetch("/api/get-mails", {
@@ -176,6 +186,8 @@ export default function Dashboard({ session, mails }) {
         body: JSON.stringify({
           target: target,
           qty: qty,
+          startDate: rangeDate[0],
+          endDate: rangeDate[1],
         }),
       });
 
@@ -190,7 +202,9 @@ export default function Dashboard({ session, mails }) {
       console.error("Error en fetch:", error);
     } finally {
       setResetSearch(false);
-      setLoading(false);
+      setTimeout(() => {
+        setLoading(false);
+      }, 500);
     }
   };
 
@@ -227,6 +241,13 @@ export default function Dashboard({ session, mails }) {
     }, 0);
   };
 
+  ///Seleccionar params
+  const selectParams = (month) => {
+    const rangeDate = getMonthRange(month);
+    setSelectedMonth(month);
+    updateMails(defaultTarget, defaultQty, rangeDate);
+  };
+
   //---- COMPONENTES PARA RENDERIZAR ---- */
 
   ///Rectangulos con info
@@ -259,8 +280,8 @@ export default function Dashboard({ session, mails }) {
     );
   };
 
-  ///Menu items for dropdown
-  const MenuItems = ({ name }) => {
+  ///Menu items for Filters
+  const FiltersMenuItem = ({ name }) => {
     let nameLower = name.toLowerCase();
     return (
       <DropdownMenuItem asChild>
@@ -270,6 +291,27 @@ export default function Dashboard({ session, mails }) {
         >
           {name}
           {nameLower === selectedFilter ? (
+            <div className="text-black">
+              <GoCheckCircleFill />
+            </div>
+          ) : (
+            <FiCircle />
+          )}
+        </button>
+      </DropdownMenuItem>
+    );
+  };
+
+  ///Menu items for Params
+  const ParamsMenuItem = ({ name, month }) => {
+    return (
+      <DropdownMenuItem asChild>
+        <button
+          className="logout-btn transition-all text-primary-color"
+          onClick={() => selectParams(month)}
+        >
+          {name}
+          {month === selectedMonth ? (
             <div className="text-black">
               <GoCheckCircleFill />
             </div>
@@ -311,7 +353,7 @@ export default function Dashboard({ session, mails }) {
           {/*//* Right Header */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="header-right">
+              <button className="header-right outline-none">
                 <div
                   className="profile-image"
                   style={{ backgroundImage: `url(${session.user.image})` }}
@@ -322,7 +364,7 @@ export default function Dashboard({ session, mails }) {
                     {session.user.name}
                   </div>
                   <div className="text-secondary-color leading-3 text-[12px] font-medium">
-                    Conectado
+                    Administrar
                   </div>
                 </div>
                 <div>
@@ -380,20 +422,45 @@ export default function Dashboard({ session, mails }) {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56" align="start">
                   <DropdownMenuGroup>
-                    <MenuItems name={"Más recientes"} />
-                    <MenuItems name={"Más antiguos"} />
-                    <MenuItems name={"Monto descendente"} />
-                    <MenuItems name={"Monto ascendente"} />
+                    <FiltersMenuItem name={"Más recientes"} />
+                    <FiltersMenuItem name={"Más antiguos"} />
+                    <FiltersMenuItem name={"Monto descendente"} />
+                    <FiltersMenuItem name={"Monto ascendente"} />
                   </DropdownMenuGroup>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <button className="btn-secondary">
-                <VscSettings />
-                Parámetros
-              </button>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="btn-secondary">
+                    <VscSettings />
+                    Parámetros
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="start">
+                  <DropdownMenuGroup>
+                    <ParamsMenuItem name={"Enero"} month={"01"} />
+                    <ParamsMenuItem name={"Febrero"} month={"02"} />
+                    <ParamsMenuItem name={"Marzo"} month={"03"} />
+                    <ParamsMenuItem name={"Abril"} month={"04"} />
+                    <ParamsMenuItem name={"Mayo"} month={"05"} />
+                    <ParamsMenuItem name={"Junio"} month={"06"} />
+                    <ParamsMenuItem name={"Julio"} month={"07"} />
+                    <ParamsMenuItem name={"Agosto"} month={"08"} />
+                    <ParamsMenuItem name={"Septiembre"} month={"09"} />
+                    <ParamsMenuItem name={"Octubre"} month={"10"} />
+                    <ParamsMenuItem name={"Noviembre"} month={"11"} />
+                    <ParamsMenuItem name={"Diciembre"} month={"12"} />
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
               <button
                 className="btn-primary"
-                onClick={() => updateMails(defaultTarget, defaultQty)}
+                onClick={() => {
+                  updateMails(defaultTarget, defaultQty, currentRange);
+                  setSelectedMonth(currentMonth);
+                }}
               >
                 <div
                   className={`${loading ? "animate-spin transition-all" : ""}`}
@@ -541,10 +608,19 @@ export default function Dashboard({ session, mails }) {
                     </div>
                     <button
                       className="btn-primary mt-6 w-[125px]"
-                      onClick={clearFilters}
+                      onClick={() => {
+                        updateMails(defaultTarget, defaultQty, currentRange);
+                        setSelectedMonth(currentMonth);
+                      }}
                     >
-                      <HiOutlineTrash />
-                      Limpiar
+                      <div
+                        className={`${
+                          loading ? "animate-spin transition-all" : ""
+                        }`}
+                      >
+                        <RxUpdate />
+                      </div>
+                      Actualizar
                     </button>
                   </div>
                 )}

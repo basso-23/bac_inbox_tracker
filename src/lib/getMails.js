@@ -11,7 +11,13 @@ const decodeBase64 = (str) => {
   }
 };
 
-export default async function getMails({ accessToken, target, qty }) {
+export default async function getMails({
+  accessToken,
+  target,
+  qty,
+  startDate,
+  endDate,
+}) {
   let mails = [];
 
   try {
@@ -19,7 +25,18 @@ export default async function getMails({ accessToken, target, qty }) {
       Authorization: `Bearer ${accessToken}`,
     };
 
-    const query = `from:${target}`;
+    // Convertimos fechas a UNIX timestamp (en segundos)
+    const afterTimestamp = startDate
+      ? Math.floor(new Date(startDate).getTime() / 1000)
+      : null;
+    const beforeTimestamp = endDate
+      ? Math.floor(new Date(endDate).getTime() / 1000)
+      : null;
+
+    // Armamos la query
+    let query = `from:${target}`;
+    if (afterTimestamp) query += ` after:${afterTimestamp}`;
+    if (beforeTimestamp) query += ` before:${beforeTimestamp}`;
 
     const listRes = await fetch(
       `https://gmail.googleapis.com/gmail/v1/users/me/messages?q=${encodeURIComponent(
