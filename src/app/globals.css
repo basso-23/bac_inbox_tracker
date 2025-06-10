@@ -310,6 +310,19 @@
   border-radius: 9999px;
 }
 
+.badge-container {
+  margin-top: 26px;
+  display: flex;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  align-items: center;
+}
+
+.badge-container span::first-letter {
+  text-transform: uppercase;
+}
+
 .table-container {
   margin-top: 26px;
 }

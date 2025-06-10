@@ -23,6 +23,7 @@ import getMonthRange from "@/lib/getMonthRange";
 import Lottie from "lottie-react";
 import NoFounded from "../../../public/lottie/animation-no-founded";
 
+import { Badge } from "@/components/ui/badge";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -71,6 +72,26 @@ function EmailIframe({ html }) {
       }}
     />
   );
+}
+
+///Mes en palabras
+function monthInWords(month) {
+  const meses = [
+    "Enero",
+    "Febrero",
+    "Marzo",
+    "Abril",
+    "Mayo",
+    "Junio",
+    "Julio",
+    "Agosto",
+    "Septiembre",
+    "Octubre",
+    "Noviembre",
+    "Diciembre",
+  ];
+  const indice = parseInt(month, 10) - 1;
+  return meses[indice];
 }
 
 export default function Dashboard({
@@ -145,7 +166,7 @@ export default function Dashboard({
     if (!resetSearch) {
       if (firstLoad) {
         setLoading(true); // activa el loading inmediatamente al escribir
-        setSelectedFilter("");
+        setSelectedFilter("más recientes");
       }
       const timeout = setTimeout(() => {
         if (searchTerm.trim() === "") {
@@ -156,7 +177,9 @@ export default function Dashboard({
           );
           setFilteredEmails(filtered);
         }
-        setLoading(false); // desactiva el loading después de filtrar
+        setTimeout(() => {
+          setLoading(false);
+        }, 250);
         setFirstLoad(true);
       }, 500);
 
@@ -204,7 +227,7 @@ export default function Dashboard({
       setResetSearch(false);
       setTimeout(() => {
         setLoading(false);
-      }, 500);
+      }, 250);
     }
   };
 
@@ -407,7 +430,7 @@ export default function Dashboard({
               </div>
             </div>
 
-            {/*//* Actions left */}
+            {/*//* Actions right */}
             <div className="actions-right">
               <button className="btn-secondary" onClick={clearFilters}>
                 <HiOutlineTrash />
@@ -494,6 +517,24 @@ export default function Dashboard({
               number={qtyRejected}
               color={"circle-bg-rejected"}
             />
+          </div>
+
+          <div className="badge-container">
+            <span>Búsqueda:</span>
+            <Badge variant="outline">
+              <FiFilter />
+              {selectedFilter.charAt(0).toUpperCase() + selectedFilter.slice(1)}
+            </Badge>
+            <Badge variant="outline">
+              <VscSettings />
+              {monthInWords(selectedMonth)}
+            </Badge>
+
+            {searchTerm != "" && (
+              <Badge variant="outline">
+                <MdSearch />"{searchTerm}"
+              </Badge>
+            )}
           </div>
 
           {/*//---- TABLE ---- */}
