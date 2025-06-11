@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { Table, Thead, Tbody, Tr, Th, Td } from "react-super-responsive-table";
 import { FaAngleDown } from "react-icons/fa6";
+import { IoIosArrowRoundForward } from "react-icons/io";
 import { IoClose } from "react-icons/io5";
 import { MdSearch } from "react-icons/md";
 import { FiFilter } from "react-icons/fi";
@@ -16,9 +17,6 @@ import { FaArrowRight } from "react-icons/fa6";
 import { HiOutlineTrash } from "react-icons/hi2";
 import { GoCheckCircleFill } from "react-icons/go";
 import { FiCircle } from "react-icons/fi";
-
-import getCurrentMonth from "@/lib/getCurrentMonth";
-import getMonthRange from "@/lib/getMonthRange";
 
 import Lottie from "lottie-react";
 import NoFounded from "../../../public/lottie/animation-no-founded";
@@ -98,11 +96,13 @@ export default function Dashboard({
   session,
   mails,
   currentMonth,
-  currentRange,
+  currentStartDay,
+  currentFinalDay,
+  currentYear,
 }) {
   const [emails, setEmails] = useState(mails);
-  const [filteredEmails, setFilteredEmails] = useState(mails); // correos filtrados
-  const [searchTerm, setSearchTerm] = useState(""); // texto de búsqueda
+  const [filteredEmails, setFilteredEmails] = useState(mails);
+  const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
 
   const [firstLoad, setFirstLoad] = useState(false);
@@ -114,7 +114,14 @@ export default function Dashboard({
   const [qtyRejected, setQtyRejected] = useState();
 
   const [selectedFilter, setSelectedFilter] = useState("más recientes");
-  const [selectedMonth, setSelectedMonth] = useState(currentMonth);
+
+  const [selectedStartMonth, setSelectedStartMonth] = useState(currentMonth);
+  const [selectedStartDay, setSelectedStartDay] = useState(currentStartDay);
+  const [selectedStartYear, setSelectedStartYear] = useState(currentYear);
+  
+  const [selectedFinalMonth, setSelectedFinalMonth] = useState(currentMonth);
+  const [selectedFinalDay, setSelectedFinalDay] = useState(currentFinalDay);
+  const [selectedFinalYear, setSelectedFinalYear] = useState(currentYear);
 
   const defaultTarget = process.env.NEXT_PUBLIC_DEFAULT_TARGET;
   const defaultQty = process.env.NEXT_PUBLIC_DEFAULT_QTY;
@@ -124,7 +131,6 @@ export default function Dashboard({
   ///Se activa cada vez que se actualiza los mails
   useEffect(() => {
     console.log(emails);
-    //console.log(defaultTarget);
 
     if (emails) {
       //Monto total
@@ -193,7 +199,7 @@ export default function Dashboard({
   }, [emails]);
 
   ///Funcion para actualizar los mails con parametros
-  const updateMails = async (target, qty, rangeDate) => {
+  const updateMails = async (target, qty) => {
     setLoading(true);
     setFirstLoad(false);
     setResetSearch(true);
@@ -209,8 +215,18 @@ export default function Dashboard({
         body: JSON.stringify({
           target: target,
           qty: qty,
-          startDate: rangeDate[0],
-          endDate: rangeDate[1],
+          startDate:
+            selectedStartYear +
+            "-" +
+            selectedStartMonth +
+            "-" +
+            selectedStartDay,
+          endDate:
+            selectedFinalYear +
+            "-" +
+            selectedFinalMonth +
+            "-" +
+            selectedFinalDay,
         }),
       });
 
@@ -264,11 +280,15 @@ export default function Dashboard({
     }, 0);
   };
 
-  ///Seleccionar params
-  const selectParams = (month) => {
-    const rangeDate = getMonthRange(month);
-    setSelectedMonth(month);
-    updateMails(defaultTarget, defaultQty, rangeDate);
+  ///Mostrar more params
+  const showParams = () => {
+    const ids = ["more-params", "more-params2"];
+    ids.forEach((id) => {
+      const div = document.getElementById(id);
+      if (div) {
+        div.style.display = div.style.display === "flex" ? "none" : "flex";
+      }
+    });
   };
 
   //---- COMPONENTES PARA RENDERIZAR ---- */
@@ -314,27 +334,6 @@ export default function Dashboard({
         >
           {name}
           {nameLower === selectedFilter ? (
-            <div className="text-black">
-              <GoCheckCircleFill />
-            </div>
-          ) : (
-            <FiCircle />
-          )}
-        </button>
-      </DropdownMenuItem>
-    );
-  };
-
-  ///Menu items for Params
-  const ParamsMenuItem = ({ name, month }) => {
-    return (
-      <DropdownMenuItem asChild>
-        <button
-          className="logout-btn transition-all text-primary-color"
-          onClick={() => selectParams(month)}
-        >
-          {name}
-          {month === selectedMonth ? (
             <div className="text-black">
               <GoCheckCircleFill />
             </div>
@@ -453,36 +452,19 @@ export default function Dashboard({
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="btn-secondary">
-                    <VscSettings />
-                    Parámetros
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="start">
-                  <DropdownMenuGroup>
-                    <ParamsMenuItem name={"Enero"} month={"01"} />
-                    <ParamsMenuItem name={"Febrero"} month={"02"} />
-                    <ParamsMenuItem name={"Marzo"} month={"03"} />
-                    <ParamsMenuItem name={"Abril"} month={"04"} />
-                    <ParamsMenuItem name={"Mayo"} month={"05"} />
-                    <ParamsMenuItem name={"Junio"} month={"06"} />
-                    <ParamsMenuItem name={"Julio"} month={"07"} />
-                    <ParamsMenuItem name={"Agosto"} month={"08"} />
-                    <ParamsMenuItem name={"Septiembre"} month={"09"} />
-                    <ParamsMenuItem name={"Octubre"} month={"10"} />
-                    <ParamsMenuItem name={"Noviembre"} month={"11"} />
-                    <ParamsMenuItem name={"Diciembre"} month={"12"} />
-                  </DropdownMenuGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
+              <button
+                className="btn-secondary"
+                onClick={() => {
+                  showParams();
+                }}
+              >
+                <VscSettings />
+                Parámetros
+              </button>
               <button
                 className="btn-primary"
                 onClick={() => {
-                  updateMails(defaultTarget, defaultQty, currentRange);
-                  setSelectedMonth(currentMonth);
+                  console.log("actulaizar");
                 }}
               >
                 <div
@@ -492,6 +474,82 @@ export default function Dashboard({
                 </div>
                 Actualizar
               </button>
+            </div>
+          </div>
+
+          <div
+            id="more-params"
+            className="actions-container2 mt-2"
+            style={{ display: "none" }}
+          >
+            {/*//* Actions left */}
+            <div className="actions-left">
+              <div></div>
+            </div>
+
+            {/*//* Actions right */}
+            <div className="actions-right2">
+              <div>
+                <span className="font-medium text-[12px] ">Incio:</span>
+                <button className="btn-secondary mt-1" onClick={clearFilters}>
+                  {monthInWords(selectedStartMonth)}
+                </button>
+              </div>
+
+              <div>
+                <span className="font-medium text-[12px] text-transparent">
+                  Incio:
+                </span>
+                <button className="btn-secondary mt-1" onClick={clearFilters}>
+                  {selectedStartDay}
+                </button>
+              </div>
+
+              <div>
+                <span className="font-medium text-[12px] text-transparent">
+                  Incio:
+                </span>
+                <button className="btn-secondary mt-1" onClick={clearFilters}>
+                  {selectedStartYear}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div
+            id="more-params2"
+            className="actions-container2 mt-2"
+            style={{ display: "none" }}
+          >
+            {/*//* Actions left */}
+            <div className="actions-left">
+              <div></div>
+            </div>
+
+            {/*//* Actions right */}
+            <div className="actions-right">
+              <div>
+                <span className="font-medium text-[12px]">Final:</span>
+                <button className="btn-secondary mt-1" onClick={clearFilters}>
+                  {monthInWords(selectedFinalMonth)}
+                </button>
+              </div>
+              <div>
+                <span className="font-medium text-[12px] text-transparent">
+                  Final:
+                </span>
+                <button className="btn-secondary mt-1" onClick={clearFilters}>
+                  {selectedFinalDay}
+                </button>
+              </div>
+              <div>
+                <span className="font-medium text-[12px] text-transparent">
+                  Final:
+                </span>
+                <button className="btn-secondary mt-1" onClick={clearFilters}>
+                  {selectedFinalYear}
+                </button>
+              </div>
             </div>
           </div>
 
@@ -526,8 +584,9 @@ export default function Dashboard({
               {selectedFilter.charAt(0).toUpperCase() + selectedFilter.slice(1)}
             </Badge>
             <Badge variant="outline">
-              <VscSettings />
-              {monthInWords(selectedMonth)}
+              {selectedStartDay} {monthInWords(selectedStartMonth)}{" "}
+              {selectedStartYear} <IoIosArrowRoundForward /> {selectedFinalDay}{" "}
+              {monthInWords(selectedFinalMonth)} {selectedFinalYear}
             </Badge>
 
             {searchTerm != "" && (
@@ -650,8 +709,7 @@ export default function Dashboard({
                     <button
                       className="btn-primary mt-6 w-[125px]"
                       onClick={() => {
-                        updateMails(defaultTarget, defaultQty, currentRange);
-                        setSelectedMonth(currentMonth);
+                        console.log("actulaizar");
                       }}
                     >
                       <div

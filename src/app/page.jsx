@@ -3,8 +3,13 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 import Dashboard from "@/components/sections/Dashboard";
 import getMails from "@/lib/getMails";
-import getCurrentMonth from "@/lib/getCurrentMonth";
-import getMonthRange from "@/lib/getMonthRange";
+
+import {
+  getCurrentMonth,
+  getCurrentStartDate,
+  getCurrentFinalDate,
+  getCurrentYear,
+} from "@/lib/getDateInfo";
 
 export default async function Home() {
   const session = await getServerSession(authOptions);
@@ -13,7 +18,9 @@ export default async function Home() {
   const defaultQty = process.env.NEXT_PUBLIC_DEFAULT_QTY;
 
   let currentMonth = getCurrentMonth();
-  let rangeDate = getMonthRange(currentMonth);
+  let currentStartDay = getCurrentStartDate();
+  let currentFinalDay = getCurrentFinalDate();
+  let currentYear = getCurrentYear();
   let mails = [];
 
   if (session) {
@@ -21,8 +28,8 @@ export default async function Home() {
       accessToken: session.accessToken,
       target: defaultTarget,
       qty: defaultQty,
-      startDate: rangeDate[0],
-      endDate: rangeDate[1],
+      startDate: currentYear + "-" + currentMonth + "-" + currentStartDay,
+      endDate: currentYear + "-" + currentMonth + "-" + currentFinalDay,
     });
   }
 
@@ -32,7 +39,9 @@ export default async function Home() {
         session={session}
         mails={mails}
         currentMonth={currentMonth}
-        currentRange={rangeDate}
+        currentStartDay={currentStartDay}
+        currentFinalDay={currentFinalDay}
+        currentYear={currentYear}
       />
     </main>
   );

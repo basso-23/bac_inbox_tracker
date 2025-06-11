@@ -1,6 +1,7 @@
 import { JSDOM } from "jsdom";
+import pLimit from "p-limit";
 
-//Para poder ver las tildes y demas
+// Para poder ver las tildes y demás
 const decodeBase64 = (str) => {
   try {
     const decoded = atob(str.replace(/-/g, "+").replace(/_/g, "/"));
@@ -18,246 +19,167 @@ export default async function getMails({
   startDate,
   endDate,
 }) {
-  let mails = [];
+  const headers = { Authorization: `Bearer ${accessToken}` };
+
+  const afterTimestamp = startDate
+    ? Math.floor(new Date(startDate).getTime() / 1000)
+    : null;
+  const beforeTimestamp = endDate
+    ? Math.floor(new Date(endDate).getTime() / 1000)
+    : null;
+
+  let query = `from:${target}`;
+  if (afterTimestamp) query += ` after:${afterTimestamp}`;
+  if (beforeTimestamp) query += ` before:${beforeTimestamp}`;
 
   try {
-    const headers = {
-      Authorization: `Bearer ${accessToken}`,
-    };
-
-    // Convertimos fechas a UNIX timestamp (en segundos)
-    const afterTimestamp = startDate
-      ? Math.floor(new Date(startDate).getTime() / 1000)
-      : null;
-    const beforeTimestamp = endDate
-      ? Math.floor(new Date(endDate).getTime() / 1000)
-      : null;
-
-    // Armamos la query
-    let query = `from:${target}`;
-    if (afterTimestamp) query += ` after:${afterTimestamp}`;
-    if (beforeTimestamp) query += ` before:${beforeTimestamp}`;
-
     const listRes = await fetch(
       `https://gmail.googleapis.com/gmail/v1/users/me/messages?q=${encodeURIComponent(
         query
       )}&maxResults=${qty.toString()}`,
       { headers }
     );
+
     const listData = await listRes.json();
     const messages = listData.messages || [];
 
+    const limit = pLimit(5); // Limitar concurrencia a 5
+
     const emailDetails = await Promise.all(
-      messages.map(async (msg) => {
-        const msgRes = await fetch(
-          `https://gmail.googleapis.com/gmail/v1/users/me/messages/${msg.id}?format=full`,
-          { headers }
-        );
-        const msgData = await msgRes.json();
-
-        const headersMap = {};
-        msgData.payload.headers.forEach((h) => {
-          headersMap[h.name] = h.value;
-        });
-
-        let body = "";
-        const parts = msgData.payload.parts;
-
-        const htmlPart = parts?.find(
-          (p) => p.mimeType === "text/html" && p.body?.data
-        );
-        const plainPart = parts?.find(
-          (p) => p.mimeType === "text/plain" && p.body?.data
-        );
-
-        let comercio = "";
-        let monto = "";
-        let tipo = "";
-        let estado = "";
-        let fechaHora = "";
-
-        if (htmlPart) {
-          body = decodeBase64(htmlPart.body.data);
-
+      messages.map((msg) =>
+        limit(async () => {
           try {
-            const dom = new JSDOM(body);
-            const doc = dom.window.document;
-            doc.body.setAttribute("style", "overflow:hidden");
+            const msgRes = await fetch(
+              `https://gmail.googleapis.com/gmail/v1/users/me/messages/${msg.id}?format=full`,
+              { headers }
+            );
+            const msgData = await msgRes.json();
 
-            // Ubicamos la informacion de "Fecha y hora" dentro del correo
-            const strongs1 = doc.querySelectorAll("strong");
-            strongs1.forEach((el) => {
-              if (el.textContent.trim() === "Fecha y hora") {
-                const tr = el.closest("tr");
-                if (tr) {
-                  tr.id = "hour_date";
-                }
-              }
+            const headersMap = {};
+            msgData.payload.headers.forEach((h) => {
+              headersMap[h.name] = h.value;
             });
 
-            // Ubicamos la informacion de "Comercio y Monto" dentro del correo
-            const strongs2 = doc.querySelectorAll("strong");
-            strongs2.forEach((el) => {
-              if (el.textContent.trim() === "Monto") {
-                const tr = el.closest("tr");
-                if (tr) {
-                  tr.id = "name_plus_amount";
-                }
-              }
-            });
+            let body = "";
+            const parts = msgData.payload.parts;
+            const htmlPart = parts?.find(
+              (p) => p.mimeType === "text/html" && p.body?.data
+            );
+            const plainPart = parts?.find(
+              (p) => p.mimeType === "text/plain" && p.body?.data
+            );
 
-            // Ubicamos la informacion de "Tipo de compra y Estado" dentro del correo
-            const strongs3 = doc.querySelectorAll("strong");
-            strongs3.forEach((el) => {
-              if (el.textContent.trim() === "Tipo de compra") {
-                const tr = el.closest("tr");
-                if (tr) {
-                  tr.id = "type_plus_status";
-                }
-              }
-            });
+            let comercio = "";
+            let monto = "";
+            let tipo = "";
+            let estado = "";
+            let fechaHora = "";
 
-            // Borrar 1
-            const strongs4 = doc.querySelectorAll("a");
-            strongs4.forEach((el) => {
-              if (el.textContent.trim() === "Centro de Ayuda") {
-                const tr = el.closest("tr");
-                if (tr) {
-                  tr.id = "final-content";
-                }
-              }
-            });
+            if (htmlPart) {
+              body = decodeBase64(htmlPart.body.data);
+              try {
+                const dom = new JSDOM(body);
+                const doc = dom.window.document;
+                doc.body.setAttribute("style", "overflow:hidden");
 
-            // Borrar 2
-            const strongs5 = doc.querySelectorAll("a");
-            strongs5.forEach((el) => {
-              if (el.textContent.trim() === "Comunicate aquí") {
-                const tr = el.closest("tr");
-                if (tr) {
-                  tr.id = "final-content2";
-                }
-              }
-            });
+                const strongs = Array.from(doc.querySelectorAll("strong"));
+                const anchors = Array.from(doc.querySelectorAll("a"));
 
-            // Borrar 3
-            const strongs6 = doc.querySelectorAll("strong");
-            strongs6.forEach((el) => {
-              if (el.textContent.trim() === "Panamá") {
-                const tr = el.closest("tr");
-                if (tr) {
-                  tr.id = "final-content3";
-                }
-              }
-            });
+                // Marcar filas de interés
+                strongs.forEach((el) => {
+                  const text = el.textContent.trim();
+                  const tr = el.closest("tr");
+                  if (!tr) return;
+                  if (text === "Fecha y hora") tr.id = "hour_date";
+                  if (text === "Monto") tr.id = "name_plus_amount";
+                  if (text === "Tipo de compra") tr.id = "type_plus_status";
+                  if (text === "Panamá") tr.id = "final-content3";
+                });
 
-            // Extraer valores de comercio y monto
-            const refRow1 = doc.getElementById("name_plus_amount");
-            if (refRow1 && refRow1.nextElementSibling) {
-              const valueRow = refRow1.nextElementSibling;
-              const tds = valueRow.querySelectorAll("td");
-              if (tds.length >= 2) {
-                const comercioP = tds[0].querySelector("p");
-                const montoP = tds[1].querySelector("p");
-                comercio = comercioP?.textContent.toLowerCase().trim() || "";
+                anchors.forEach((el) => {
+                  const text = el.textContent.trim();
+                  const tr = el.closest("tr");
+                  if (!tr) return;
+                  if (text === "Centro de Ayuda") tr.id = "final-content";
+                  if (text === "Comunicate aquí") tr.id = "final-content2";
+                });
 
-                const rawMonto = montoP?.textContent
-                  .trim()
+                // Extraer valores
+                const extractTextFromTd = (trId, index) => {
+                  const tr = doc.getElementById(trId);
+                  const valueRow = tr?.nextElementSibling;
+                  if (!valueRow) return "";
+                  const td = valueRow.querySelectorAll("td")[index];
+                  return td?.querySelector("p")?.textContent.trim() || "";
+                };
+
+                comercio = extractTextFromTd(
+                  "name_plus_amount",
+                  0
+                ).toLowerCase();
+                const rawMonto = extractTextFromTd("name_plus_amount", 1)
                   .replace(/[^\d.,-]/g, "")
                   .replace(",", ".");
                 const parsedMonto = parseFloat(rawMonto);
                 monto = isNaN(parsedMonto) ? rawMonto : parsedMonto.toFixed(2);
+
+                tipo = extractTextFromTd("type_plus_status", 0);
+                estado = extractTextFromTd("type_plus_status", 1);
+                fechaHora = extractTextFromTd("hour_date", 0);
+
+                // Eliminar secciones innecesarias
+                ["final-content", "final-content2", "final-content3"].forEach(
+                  (id) => {
+                    const ref = doc.getElementById(id);
+                    if (!ref) return;
+                    let current = ref;
+                    while (current) {
+                      const next = current.nextElementSibling;
+                      current.remove();
+                      current = next?.tagName === "TR" ? next : null;
+                    }
+                  }
+                );
+
+                body = doc.documentElement.outerHTML;
+              } catch (err) {
+                console.error("Error al procesar HTML:", err);
               }
+            } else if (plainPart) {
+              body = decodeBase64(plainPart.body.data);
+            } else if (msgData.payload.body?.data) {
+              body = decodeBase64(msgData.payload.body.data);
             }
 
-            // Extraer valores de tipo de compra y estado
-            const refRow2 = doc.getElementById("type_plus_status");
-            if (refRow2 && refRow2.nextElementSibling) {
-              const valueRow = refRow2.nextElementSibling;
-              const tds = valueRow.querySelectorAll("td");
-              if (tds.length >= 2) {
-                const tipoP = tds[0].querySelector("p");
-                const estadoP = tds[1].querySelector("p");
-                tipo = tipoP?.textContent.trim() || "";
-                estado = estadoP?.textContent.trim() || "";
-              }
-            }
-
-            // Extraer valor de fecha y hora
-            const refRow3 = doc.getElementById("hour_date");
-            if (refRow3 && refRow3.nextElementSibling) {
-              const valueRow = refRow3.nextElementSibling;
-              const td = valueRow.querySelector("td");
-              const fechaP = td?.querySelector("p");
-              fechaHora = fechaP?.textContent.trim() || "";
-            }
-
-            // Borrar todos los tr a partir del id "final-content", incluyendo ese mismo
-            const refRowFinal = doc.getElementById("final-content");
-            if (refRowFinal) {
-              let current = refRowFinal;
-              while (current) {
-                const next = current.nextElementSibling;
-                current.remove();
-                current = next?.tagName === "TR" ? next : null;
-              }
-            }
-
-            // Borrar todos los tr a partir del id "final-content2", incluyendo ese mismo
-            const refRowFinal2 = doc.getElementById("final-content2");
-            if (refRowFinal2) {
-              let current = refRowFinal2;
-              while (current) {
-                const next = current.nextElementSibling;
-                current.remove();
-                current = next?.tagName === "TR" ? next : null;
-              }
-            }
-
-            // Borrar todos los tr a partir del id "final-content3", incluyendo ese mismo
-            const refRowFinal3 = doc.getElementById("final-content3");
-            if (refRowFinal3) {
-              let current = refRowFinal3;
-              while (current) {
-                const next = current.nextElementSibling;
-                current.remove();
-                current = next?.tagName === "TR" ? next : null;
-              }
-            }
-
-            body = doc.documentElement.outerHTML;
+            return {
+              id: msg.id,
+              subject: headersMap["Subject"],
+              from: headersMap["From"],
+              date: headersMap["Date"],
+              body,
+              isHtml: !!htmlPart,
+              comercio,
+              monto,
+              tipo,
+              estado,
+              fechaHora,
+            };
           } catch (err) {
-            console.error("Error al modificar el HTML:", err);
+            console.error(`Error al procesar mensaje ${msg.id}:`, err);
+            return null;
           }
-        } else if (plainPart) {
-          body = decodeBase64(plainPart.body.data);
-        } else if (msgData.payload.body?.data) {
-          body = decodeBase64(msgData.payload.body.data);
-        }
-
-        return {
-          id: msg.id,
-          subject: headersMap["Subject"],
-          from: headersMap["From"],
-          date: headersMap["Date"],
-          body,
-          isHtml: !!htmlPart,
-          comercio,
-          monto,
-          tipo,
-          estado,
-          fechaHora,
-        };
-      })
+        })
+      )
     );
 
-    const sortedEmails = emailDetails.sort(
-      (a, b) => new Date(b.date) - new Date(a.date)
+    const validEmails = emailDetails.filter((e) => e !== null);
+    return validEmails.sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
     );
-    mails = sortedEmails;
-    return mails;
   } catch (err) {
     console.error("Error al obtener correos:", err);
+    return [];
   } finally {
-    console.log("Carga de correos exitosa ✅");
+    console.log("Carga de correos finalizada ✅");
   }
 }
