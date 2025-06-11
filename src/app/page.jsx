@@ -6,10 +6,10 @@ import getMails from "@/lib/getMails";
 
 import {
   getCurrentMonth,
-  getCurrentStartDate,
-  getCurrentFinalDate,
+  getCurrentStartDay,
+  getCurrentFinalDay,
   getCurrentYear,
-} from "@/lib/getDateInfo";
+} from "@/lib/getCurrentDate";
 
 export default async function Home() {
   const session = await getServerSession(authOptions);
@@ -18,8 +18,8 @@ export default async function Home() {
   const defaultQty = process.env.NEXT_PUBLIC_DEFAULT_QTY;
 
   let currentMonth = getCurrentMonth();
-  let currentStartDay = getCurrentStartDate();
-  let currentFinalDay = getCurrentFinalDate();
+  let currentStartDay = getCurrentStartDay();
+  let currentFinalDay = getCurrentFinalDay();
   let currentYear = getCurrentYear();
   let mails = [];
 

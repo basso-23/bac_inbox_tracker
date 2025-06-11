@@ -1,11 +1,12 @@
 "use client";
 
-import { useSession, signIn, signOut } from "next-auth/react";
+import { signIn, signOut } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 
 import { Table, Thead, Tbody, Tr, Th, Td } from "react-super-responsive-table";
 import { FaAngleDown } from "react-icons/fa6";
 import { IoIosArrowRoundForward } from "react-icons/io";
+import { IoIosArrowRoundDown } from "react-icons/io";
 import { IoClose } from "react-icons/io5";
 import { MdSearch } from "react-icons/md";
 import { FiFilter } from "react-icons/fi";
@@ -13,10 +14,10 @@ import { VscSettings } from "react-icons/vsc";
 import { RxUpdate } from "react-icons/rx";
 import { RxCaretSort } from "react-icons/rx";
 import { RiLogoutBoxRLine } from "react-icons/ri";
-import { FaArrowRight } from "react-icons/fa6";
 import { HiOutlineTrash } from "react-icons/hi2";
 import { GoCheckCircleFill } from "react-icons/go";
 import { FiCircle } from "react-icons/fi";
+import { LiaSave } from "react-icons/lia";
 
 import Lottie from "lottie-react";
 import NoFounded from "../../../public/lottie/animation-no-founded";
@@ -37,6 +38,7 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
@@ -65,7 +67,7 @@ function EmailIframe({ html }) {
         height: "600px",
         top: "50%",
         left: "50%",
-        marginTop: "28px",
+        marginTop: "20px",
         transform: "translate(-50%, -50%)",
       }}
     />
@@ -118,10 +120,18 @@ export default function Dashboard({
   const [selectedStartMonth, setSelectedStartMonth] = useState(currentMonth);
   const [selectedStartDay, setSelectedStartDay] = useState(currentStartDay);
   const [selectedStartYear, setSelectedStartYear] = useState(currentYear);
-  
+
   const [selectedFinalMonth, setSelectedFinalMonth] = useState(currentMonth);
   const [selectedFinalDay, setSelectedFinalDay] = useState(currentFinalDay);
   const [selectedFinalYear, setSelectedFinalYear] = useState(currentYear);
+
+  const [refStartMonth, setRefStartMonth] = useState();
+  const [refStartDay, setRefStartDay] = useState();
+  const [refStartYear, setRefStartYear] = useState();
+
+  const [refFinalMonth, setRefFinalMonth] = useState();
+  const [refFinalDay, setRefFinalDay] = useState();
+  const [refFinalYear, setRefFinalYear] = useState();
 
   const defaultTarget = process.env.NEXT_PUBLIC_DEFAULT_TARGET;
   const defaultQty = process.env.NEXT_PUBLIC_DEFAULT_QTY;
@@ -199,12 +209,17 @@ export default function Dashboard({
   }, [emails]);
 
   ///Funcion para actualizar los mails con parametros
-  const updateMails = async (target, qty) => {
+  const updateMails = async () => {
     setLoading(true);
     setFirstLoad(false);
     setResetSearch(true);
     setSearchTerm("");
     selectFilter("más recientes");
+
+    let startDate =
+      selectedStartYear + "-" + selectedStartMonth + "-" + selectedStartDay;
+    let endDate =
+      selectedFinalYear + "-" + selectedFinalMonth + "-" + selectedFinalDay;
 
     try {
       const res = await fetch("/api/get-mails", {
@@ -213,20 +228,10 @@ export default function Dashboard({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          target: target,
-          qty: qty,
-          startDate:
-            selectedStartYear +
-            "-" +
-            selectedStartMonth +
-            "-" +
-            selectedStartDay,
-          endDate:
-            selectedFinalYear +
-            "-" +
-            selectedFinalMonth +
-            "-" +
-            selectedFinalDay,
+          target: defaultTarget,
+          qty: defaultQty,
+          startDate: startDate,
+          endDate: endDate,
         }),
       });
 
@@ -280,15 +285,15 @@ export default function Dashboard({
     }, 0);
   };
 
-  ///Mostrar more params
-  const showParams = () => {
-    const ids = ["more-params", "more-params2"];
-    ids.forEach((id) => {
-      const div = document.getElementById(id);
-      if (div) {
-        div.style.display = div.style.display === "flex" ? "none" : "flex";
-      }
-    });
+  ///Guardar datos de params
+  const saveParamsData = () => {
+    setTimeout(() => {
+      refStartDay && setSelectedStartDay(refStartDay);
+      refStartYear && setSelectedStartYear(refStartYear);
+
+      refFinalDay && setSelectedFinalDay(refFinalDay);
+      refFinalYear && setSelectedFinalYear(refFinalYear);
+    }, 0);
   };
 
   //---- COMPONENTES PARA RENDERIZAR ---- */
@@ -429,12 +434,14 @@ export default function Dashboard({
               </div>
             </div>
 
-            {/*//* Actions right */}
             <div className="actions-right">
+              {/*//* Clear btn */}
               <button className="btn-secondary" onClick={clearFilters}>
                 <HiOutlineTrash />
                 Limpiar
               </button>
+
+              {/*//* Filtros btn */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="btn-secondary">
@@ -452,19 +459,109 @@ export default function Dashboard({
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              <button
-                className="btn-secondary"
-                onClick={() => {
-                  showParams();
-                }}
-              >
-                <VscSettings />
-                Parámetros
-              </button>
+              {/*//* Parámetros */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="btn-secondary">
+                    <VscSettings />
+                    Parámetros
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="start">
+                  <DropdownMenuGroup>
+                    <DropdownMenuLabel asChild>
+                      {/*// Fecha de incio */}
+                      <div className="text-[13px] params-grid transition-all">
+                        <input
+                          type="number"
+                          id="inputStartDay"
+                          autoComplete="off"
+                          defaultValue={selectedStartDay}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setTimeout(() => {
+                              setRefStartDay(value);
+                            }, 100);
+                          }}
+                        />
+                        <button>{monthInWords(selectedStartMonth)}</button>{" "}
+                        <input
+                          type="number"
+                          id="inputStartYear"
+                          autoComplete="off"
+                          defaultValue={selectedStartYear}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setTimeout(() => {
+                              setRefStartYear(value);
+                            }, 100);
+                          }}
+                        />
+                      </div>
+                    </DropdownMenuLabel>
+
+                    <DropdownMenuLabel asChild>
+                      <div className="text-[13px] flex justify-center items-center">
+                        <IoIosArrowRoundDown />
+                      </div>
+                    </DropdownMenuLabel>
+
+                    {/*// Fecha de final */}
+                    <DropdownMenuLabel asChild>
+                      <div className="text-[13px] params-grid">
+                        <input
+                          type="number"
+                          id="inputFinalDay"
+                          autoComplete="off"
+                          defaultValue={selectedFinalDay}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setTimeout(() => {
+                              setRefFinalDay(value);
+                            }, 100);
+                          }}
+                        />
+                        <button>{monthInWords(selectedFinalMonth)}</button>{" "}
+                        <input
+                          type="number"
+                          id="inputFinalYear"
+                          autoComplete="off"
+                          defaultValue={selectedFinalYear}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setTimeout(() => {
+                              setRefFinalYear(value);
+                            }, 100);
+                          }}
+                        />
+                      </div>
+                    </DropdownMenuLabel>
+
+                    {/*// Guardar btn */}
+                    <DropdownMenuItem asChild>
+                      <div className=" mt-2 px-2">
+                        <button
+                          className="btn-primary w-full"
+                          onClick={saveParamsData}
+                        >
+                          <div
+                            className={`${
+                              loading ? "animate-spin transition-all" : ""
+                            }`}
+                          >
+                            <LiaSave />
+                          </div>
+                          Guardar
+                        </button>
+                      </div>
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <button
                 className="btn-primary"
                 onClick={() => {
-                  console.log("actulaizar");
+                  updateMails();
                 }}
               >
                 <div
@@ -474,82 +571,6 @@ export default function Dashboard({
                 </div>
                 Actualizar
               </button>
-            </div>
-          </div>
-
-          <div
-            id="more-params"
-            className="actions-container2 mt-2"
-            style={{ display: "none" }}
-          >
-            {/*//* Actions left */}
-            <div className="actions-left">
-              <div></div>
-            </div>
-
-            {/*//* Actions right */}
-            <div className="actions-right2">
-              <div>
-                <span className="font-medium text-[12px] ">Incio:</span>
-                <button className="btn-secondary mt-1" onClick={clearFilters}>
-                  {monthInWords(selectedStartMonth)}
-                </button>
-              </div>
-
-              <div>
-                <span className="font-medium text-[12px] text-transparent">
-                  Incio:
-                </span>
-                <button className="btn-secondary mt-1" onClick={clearFilters}>
-                  {selectedStartDay}
-                </button>
-              </div>
-
-              <div>
-                <span className="font-medium text-[12px] text-transparent">
-                  Incio:
-                </span>
-                <button className="btn-secondary mt-1" onClick={clearFilters}>
-                  {selectedStartYear}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div
-            id="more-params2"
-            className="actions-container2 mt-2"
-            style={{ display: "none" }}
-          >
-            {/*//* Actions left */}
-            <div className="actions-left">
-              <div></div>
-            </div>
-
-            {/*//* Actions right */}
-            <div className="actions-right">
-              <div>
-                <span className="font-medium text-[12px]">Final:</span>
-                <button className="btn-secondary mt-1" onClick={clearFilters}>
-                  {monthInWords(selectedFinalMonth)}
-                </button>
-              </div>
-              <div>
-                <span className="font-medium text-[12px] text-transparent">
-                  Final:
-                </span>
-                <button className="btn-secondary mt-1" onClick={clearFilters}>
-                  {selectedFinalDay}
-                </button>
-              </div>
-              <div>
-                <span className="font-medium text-[12px] text-transparent">
-                  Final:
-                </span>
-                <button className="btn-secondary mt-1" onClick={clearFilters}>
-                  {selectedFinalYear}
-                </button>
-              </div>
             </div>
           </div>
 
@@ -661,9 +682,6 @@ export default function Dashboard({
                                             target="_blank"
                                           >
                                             Google cloud API
-                                            <span>
-                                              <FaArrowRight />
-                                            </span>
                                           </a>
                                         </div>
                                       </div>
@@ -709,7 +727,7 @@ export default function Dashboard({
                     <button
                       className="btn-primary mt-6 w-[125px]"
                       onClick={() => {
-                        console.log("actulaizar");
+                        updateMails();
                       }}
                     >
                       <div
