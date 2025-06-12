@@ -2,6 +2,7 @@
 
 import { signOut } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
+import { motion as m, AnimatePresence } from "framer-motion";
 
 import { Table, Thead, Tbody, Tr, Th, Td } from "react-super-responsive-table";
 import { FaAngleDown } from "react-icons/fa6";
@@ -131,6 +132,7 @@ export default function Dashboard({
   currentStartDay,
   currentFinalDay,
   currentYear,
+  profileImg,
 }) {
   const [emails, setEmails] = useState(mails);
   const [filteredEmails, setFilteredEmails] = useState(mails);
@@ -477,7 +479,7 @@ export default function Dashboard({
               <button className="header-right outline-none">
                 <div
                   className="profile-image"
-                  style={{ backgroundImage: `url(${session.user.image})` }}
+                  style={{ backgroundImage: `url(${profileImg})` }}
                 ></div>
 
                 <div>
@@ -740,96 +742,105 @@ export default function Dashboard({
           </div>
 
           {/*//---- TABLE ---- */}
+
           <div className="table-container">
             {qtyMails != 0 && !loading ? (
-              <Table>
-                {/*//* Headers */}
-                <Thead className="table-head ">
-                  <Tr>
-                    <ThTable
-                      name={"Comercio"}
-                      icon={<RxCaretSort />}
-                      style={"first-th"}
-                    />
-                    <ThTable name={"Fecha y hora"} icon={<RxCaretSort />} />
-                    <ThTable name={"Estado"} icon={<RxCaretSort />} />
-                    <ThTable name={"Monto"} icon={<RxCaretSort />} />
-                    <ThTable name={"Tipo de compra"} icon={<RxCaretSort />} />
-                    <ThTable name={"Info"} />
-                  </Tr>
-                </Thead>
-                <Tbody className="table-body">
-                  {/*//* Table content */}
-                  {filteredEmails.map((email) => {
-                    return (
-                      <Tr className="general-padding" key={email.id}>
-                        <Td className="first-th capitalize">
-                          {email.comercio}
-                        </Td>
-                        <Td>{email.fechaHora}</Td>
-                        <Td>
-                          {email.estado.toLowerCase() === "aprobada" ? (
-                            <div className="status-approved">Completada</div>
-                          ) : (
-                            <div className="status-rejected">Rechazada</div>
-                          )}
-                        </Td>
-                        <Td>${email.monto}</Td>
-                        <Td>{email.tipo}</Td>
-                        <Td>
-                          {/*//---- RENDER DEL BODY DE LOS CORREOS ---- */}
-                          <div className="iframe-container">
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <button className="show-mail-btn transition-all">
-                                  Ver correo
-                                </button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle asChild>
-                                    <div className="modal-header">
-                                      <div className="flex gap-3">
-                                        <div className="gmail-icon-container">
-                                          <div className="gmail-icon"></div>
-                                        </div>
-
-                                        <div className=" flex justify-center flex-col leading-5">
-                                          <div className="gmail-title">
-                                            Gmail
+              <m.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  duration: 0.4,
+                }}
+              >
+                <Table>
+                  {/*//* Headers */}
+                  <Thead className="table-head ">
+                    <Tr>
+                      <ThTable
+                        name={"Comercio"}
+                        icon={<RxCaretSort />}
+                        style={"first-th"}
+                      />
+                      <ThTable name={"Fecha y hora"} icon={<RxCaretSort />} />
+                      <ThTable name={"Estado"} icon={<RxCaretSort />} />
+                      <ThTable name={"Monto"} icon={<RxCaretSort />} />
+                      <ThTable name={"Tipo de compra"} icon={<RxCaretSort />} />
+                      <ThTable name={"Info"} />
+                    </Tr>
+                  </Thead>
+                  <Tbody className="table-body">
+                    {/*//* Table content */}
+                    {filteredEmails.map((email) => {
+                      return (
+                        <Tr className="general-padding" key={email.id}>
+                          <Td className="first-th capitalize">
+                            {email.comercio}
+                          </Td>
+                          <Td>{email.fechaHora}</Td>
+                          <Td>
+                            {email.estado.toLowerCase() === "aprobada" ? (
+                              <div className="status-approved">Completada</div>
+                            ) : (
+                              <div className="status-rejected">Rechazada</div>
+                            )}
+                          </Td>
+                          <Td>${email.monto}</Td>
+                          <Td>{email.tipo}</Td>
+                          <Td>
+                            {/*//---- RENDER DEL BODY DE LOS CORREOS ---- */}
+                            <div className="iframe-container">
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <button className="show-mail-btn transition-all">
+                                    Ver correo
+                                  </button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle asChild>
+                                      <div className="modal-header">
+                                        <div className="flex gap-3">
+                                          <div className="gmail-icon-container">
+                                            <div className="gmail-icon"></div>
                                           </div>
-                                          <a
-                                            className="gmail-subtitle"
-                                            href={
-                                              "https://cloud.google.com/?hl=es"
-                                            }
-                                            target="_blank"
-                                          >
-                                            Google cloud API
-                                          </a>
+
+                                          <div className=" flex justify-center flex-col leading-5">
+                                            <div className="gmail-title">
+                                              Gmail
+                                            </div>
+                                            <a
+                                              className="gmail-subtitle"
+                                              href={
+                                                "https://cloud.google.com/?hl=es"
+                                              }
+                                              target="_blank"
+                                            >
+                                              Google cloud API
+                                            </a>
+                                          </div>
                                         </div>
+                                        <AlertDialogCancel asChild>
+                                          <button className="btn-secondary close-iframe-btn leading-0">
+                                            <IoClose />
+                                          </button>
+                                        </AlertDialogCancel>
                                       </div>
-                                      <AlertDialogCancel asChild>
-                                        <button className="btn-secondary close-iframe-btn leading-0">
-                                          <IoClose />
-                                        </button>
-                                      </AlertDialogCancel>
-                                    </div>
-                                  </AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    <EmailIframe html={email.body} />
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter></AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </div>
-                        </Td>
-                      </Tr>
-                    );
-                  })}
-                </Tbody>
-              </Table>
+                                    </AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      <EmailIframe html={email.body} />
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter></AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
+                          </Td>
+                        </Tr>
+                      );
+                    })}
+                  </Tbody>
+                </Table>
+              </m.div>
             ) : (
               <>
                 {/*//---- SEARCH NOT FOUND ---- */}

@@ -28,6 +28,10 @@ export default async function Home() {
   let currentStartDay = getCurrentStartDay();
   let currentFinalDay = getCurrentFinalDay();
   let currentYear = getCurrentYear();
+  let proxyImg = `/api/proxy/profile-img?url=${encodeURIComponent(
+    session.user.image
+  )}`;
+
   let mails = [];
 
   if (session) {
@@ -49,6 +53,7 @@ export default async function Home() {
         currentStartDay={currentStartDay}
         currentFinalDay={currentFinalDay}
         currentYear={currentYear}
+        profileImg={proxyImg}
       />
     </main>
   );

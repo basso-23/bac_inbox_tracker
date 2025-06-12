@@ -226,7 +226,7 @@
   border-top-right-radius: 16px;
   margin-top: 36px;
   background-color: #ffffff;
-  overflow: auto;
+  overflow-y: clip;
   padding-top: 32px;
   padding-bottom: 32px;
 }
@@ -349,6 +349,7 @@
 
 .table-container {
   margin-top: 26px;
+  overflow: hidden;
 }
 
 .table-head {
