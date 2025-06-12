@@ -1,6 +1,6 @@
 "use client";
 
-import { signIn, signOut } from "next-auth/react";
+import { signOut } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 
 import { Table, Thead, Tbody, Tr, Th, Td } from "react-super-responsive-table";
@@ -210,17 +210,33 @@ export default function Dashboard({
   }, [emails]);
 
   ///Funcion para actualizar los mails con parametros
-  const updateMails = async () => {
+  const updateMails = async (mode) => {
     setLoading(true);
     setFirstLoad(false);
     setResetSearch(true);
     setSearchTerm("");
     selectFilter("más recientes");
 
-    let startDate =
-      selectedStartYear + "-" + selectedStartMonth + "-" + selectedStartDay;
-    let endDate =
-      selectedFinalYear + "-" + selectedFinalMonth + "-" + selectedFinalDay;
+    let startDate = "";
+    let endDate = "";
+
+    if (mode === "default") {
+      startDate = currentYear + "-" + currentMonth + "-" + currentStartDay;
+      endDate = currentYear + "-" + currentMonth + "-" + currentFinalDay;
+
+      setSelectedStartDay(currentStartDay);
+      setSelectedStartMonth(currentMonth);
+      setSelectedStartYear(currentYear);
+
+      setSelectedFinalDay(currentFinalDay);
+      setSelectedFinalMonth(currentMonth);
+      setSelectedFinalYear(currentYear);
+    } else {
+      startDate =
+        selectedStartYear + "-" + selectedStartMonth + "-" + selectedStartDay;
+      endDate =
+        selectedFinalYear + "-" + selectedFinalMonth + "-" + selectedFinalDay;
+    }
 
     try {
       const res = await fetch("/api/get-mails", {
@@ -357,7 +373,7 @@ export default function Dashboard({
       <div className="main-container">
         {/*//---- HEADER ---- */}
         <div className="header-container general-padding">
-          {/*//* Left Header */}
+          {/*//* Title and logo */}
           <div className="flex items-center gap-3">
             <div
               className="logo"
@@ -367,7 +383,7 @@ export default function Dashboard({
             <div className="font-large font-semibold">BAC Mail Checker</div>
           </div>
 
-          {/*//* Right Header */}
+          {/*//* Logout btn */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="header-right outline-none">
@@ -408,7 +424,7 @@ export default function Dashboard({
         <div className="content-container general-padding screen-width">
           {/*//---- ACTIONS ---- */}
           <div className="actions-container">
-            {/*//* Actions left */}
+            {/*//* Searchbar */}
             <div className="actions-left">
               <div className="searchbar-container">
                 <input
@@ -460,7 +476,7 @@ export default function Dashboard({
                 <DropdownMenuContent className="w-56" align="start">
                   <DropdownMenuGroup>
                     <DropdownMenuLabel asChild>
-                      {/*// Fecha de incio */}
+                      {/*//* Fecha de incio */}
                       <div className="text-[13px] params-grid transition-all">
                         <input
                           type="number"
@@ -490,13 +506,14 @@ export default function Dashboard({
                       </div>
                     </DropdownMenuLabel>
 
+                    {/*//* Flecha para abajo */}
                     <DropdownMenuLabel asChild>
                       <div className="text-[13px] flex justify-center items-center">
                         <IoIosArrowRoundDown />
                       </div>
                     </DropdownMenuLabel>
 
-                    {/*// Fecha de final */}
+                    {/*//* Fecha de final */}
                     <DropdownMenuLabel asChild>
                       <div className="text-[13px] params-grid">
                         <input
@@ -527,7 +544,7 @@ export default function Dashboard({
                       </div>
                     </DropdownMenuLabel>
 
-                    {/*// Guardar btn */}
+                    {/*//* Guardar btn */}
                     <DropdownMenuItem2 asChild>
                       <div className="mt-2 px-2 transition-all">
                         <button
@@ -544,10 +561,12 @@ export default function Dashboard({
                   </DropdownMenuGroup>
                 </DropdownMenuContent>
               </DropdownMenu>
+
+              {/*//* Actualizar btn */}
               <button
                 className="btn-primary"
                 onClick={() => {
-                  updateMails();
+                  updateMails("custom");
                 }}
               >
                 <div
@@ -560,7 +579,7 @@ export default function Dashboard({
             </div>
           </div>
 
-          {/*//---- RECTANGLES INFO ---- */}
+          {/*//---- INFO RECTANGLES ---- */}
           <div className="rectangles-container">
             <Rectangles
               name={"Monto Total"}
@@ -584,6 +603,7 @@ export default function Dashboard({
             />
           </div>
 
+          {/*//---- INFO BADGES ---- */}
           <div className="badge-container">
             <span>Búsqueda:</span>
             <Badge variant="outline">
@@ -607,6 +627,7 @@ export default function Dashboard({
           <div className="table-container">
             {qtyMails != 0 && !loading ? (
               <Table>
+                {/*//* Headers */}
                 <Thead className="table-head ">
                   <Tr>
                     <ThTable
@@ -622,6 +643,7 @@ export default function Dashboard({
                   </Tr>
                 </Thead>
                 <Tbody className="table-body">
+                  {/*//* Table content */}
                   {filteredEmails.map((email) => {
                     return (
                       <Tr className="general-padding" key={email.id}>
@@ -694,6 +716,7 @@ export default function Dashboard({
               </Table>
             ) : (
               <>
+                {/*//---- SEARCH NOT FOUND ---- */}
                 {qtyMails || loading ? (
                   <div className="p-4 text-center animate-pulse text-secondary-color">
                     Cargando correos...
@@ -713,7 +736,7 @@ export default function Dashboard({
                     <button
                       className="btn-primary mt-6 w-[125px]"
                       onClick={() => {
-                        updateMails();
+                        updateMails("default");
                       }}
                     >
                       <div
