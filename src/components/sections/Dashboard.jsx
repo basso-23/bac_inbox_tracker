@@ -43,6 +43,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  PopoverTriggerClose,
+} from "@/components/ui/popover";
+
 /// Componente iframe para renderizar HTML
 function EmailIframe({ html }) {
   const iframeRef = useRef(null);
@@ -76,8 +83,8 @@ function EmailIframe({ html }) {
 }
 
 ///Mes en palabras
-function monthInWords(month) {
-  const meses = [
+function monthInWords(month, mode) {
+  const complete = [
     "Enero",
     "Febrero",
     "Marzo",
@@ -91,8 +98,30 @@ function monthInWords(month) {
     "Noviembre",
     "Diciembre",
   ];
+
+  const shorten = [
+    "Ene",
+    "Feb",
+    "Mar",
+    "Abr",
+    "May",
+    "Jun",
+    "Jul",
+    "Ago",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dic",
+  ];
+
   const indice = parseInt(month, 10) - 1;
-  return meses[indice];
+  if (indice < 0 || indice > 11) return null; // validación de índice
+
+  if (mode === "shorten") {
+    return shorten[indice];
+  } else {
+    return complete[indice];
+  }
 }
 
 export default function Dashboard({
@@ -367,6 +396,65 @@ export default function Dashboard({
     );
   };
 
+  const MonthsPopover = ({ mode }) => {
+    const meses = [
+      "Ene",
+      "Feb",
+      "Mar",
+      "Abr",
+      "May",
+      "Jun",
+      "Jul",
+      "Ago",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dic",
+    ];
+
+    const monthSelect = (index, mode) => {
+      setTimeout(() => {
+        if (mode === "inicio") {
+          setSelectedStartMonth(index + 1);
+        } else {
+          setSelectedFinalMonth(index + 1);
+        }
+      }, 0);
+    };
+
+    return (
+      <div className="months-popover">
+        {meses.map((mes, index) => (
+          <PopoverTriggerClose key={index} asChild>
+            {mode === "inicio" ? (
+              <button
+                className={`transition-all ${
+                  monthInWords(selectedStartMonth, "shorten") === mes
+                    ? "btn-primary !pointer-events-none"
+                    : "btn-secondary"
+                }`}
+                onClick={() => monthSelect(index, mode)}
+              >
+                {mes}
+              </button>
+            ) : (
+              <button
+                className={`transition-all ${
+                  monthInWords(selectedFinalMonth, "shorten") === mes
+                    ? "btn-primary !pointer-events-none"
+                    : "btn-secondary"
+                }`}
+                onClick={() => monthSelect(index, mode)}
+              >
+                {mes}
+              </button>
+            )}
+          </PopoverTriggerClose>
+        ))}
+      </div>
+    );
+  };
+
   ///Logged in screen
   return (
     <>
@@ -422,7 +510,7 @@ export default function Dashboard({
         </div>
 
         <div className="content-container general-padding screen-width">
-          {/*//---- ACTIONS ---- */}
+          {/*//---- ACTIONS BUTTONS ---- */}
           <div className="actions-container">
             {/*//* Searchbar */}
             <div className="actions-left">
@@ -476,8 +564,8 @@ export default function Dashboard({
                 <DropdownMenuContent className="w-56" align="start">
                   <DropdownMenuGroup>
                     <DropdownMenuLabel asChild>
-                      {/*//* Fecha de incio */}
                       <div className="text-[13px] params-grid transition-all">
+                        {/*//* Dia de inicio */}
                         <input
                           type="number"
                           id="inputStartDay"
@@ -490,7 +578,22 @@ export default function Dashboard({
                             }, 100);
                           }}
                         />
-                        <button>{monthInWords(selectedStartMonth)}</button>{" "}
+
+                        {/*//* Mes de inicio */}
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <button>
+                              {monthInWords(selectedStartMonth, "shorten")}
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent asChild>
+                            <div>
+                              <MonthsPopover mode={"inicio"} />
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+
+                        {/*//* Año de inicio */}
                         <input
                           type="number"
                           id="inputStartYear"
@@ -513,7 +616,7 @@ export default function Dashboard({
                       </div>
                     </DropdownMenuLabel>
 
-                    {/*//* Fecha de final */}
+                    {/*//* Dia de final */}
                     <DropdownMenuLabel asChild>
                       <div className="text-[13px] params-grid">
                         <input
@@ -528,7 +631,20 @@ export default function Dashboard({
                             }, 100);
                           }}
                         />
-                        <button>{monthInWords(selectedFinalMonth)}</button>{" "}
+                        {/*//* Mes de final */}
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <button>
+                              {monthInWords(selectedFinalMonth, "shorten")}
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent asChild>
+                            <div>
+                              <MonthsPopover mode={"final"} />
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+                        {/*//* Año de final */}
                         <input
                           type="number"
                           id="inputFinalYear"
@@ -611,9 +727,9 @@ export default function Dashboard({
               {selectedFilter.charAt(0).toUpperCase() + selectedFilter.slice(1)}
             </Badge>
             <Badge variant="outline">
-              {selectedStartDay} {monthInWords(selectedStartMonth)}{" "}
+              {selectedStartDay} {monthInWords(selectedStartMonth, "complete")}{" "}
               {selectedStartYear} <IoIosArrowRoundForward /> {selectedFinalDay}{" "}
-              {monthInWords(selectedFinalMonth)} {selectedFinalYear}
+              {monthInWords(selectedFinalMonth, "complete")} {selectedFinalYear}
             </Badge>
 
             {searchTerm != "" && (
