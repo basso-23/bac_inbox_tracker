@@ -11,8 +11,15 @@ import {
   getCurrentYear,
 } from "@/lib/getCurrentDate";
 
+import { redirect } from "next/navigation";
+
 export default async function Home() {
   const session = await getServerSession(authOptions);
+
+  // ⛔ Si no hay sesión, redirige al login
+  if (!session) {
+    redirect("/api/auth/signin");
+  }
 
   const defaultTarget = process.env.NEXT_PUBLIC_DEFAULT_TARGET;
   const defaultQty = process.env.NEXT_PUBLIC_DEFAULT_QTY;

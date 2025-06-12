@@ -38,6 +38,7 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuItem2,
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -350,17 +351,6 @@ export default function Dashboard({
     );
   };
 
-  ///No session screen
-  if (!session) {
-    return (
-      <div className="flex justify-center p-8">
-        <button className="btn-primary transition-all" onClick={() => signIn()}>
-          Iniciar sesión con Google
-        </button>
-      </div>
-    );
-  }
-
   ///Logged in screen
   return (
     <>
@@ -476,7 +466,7 @@ export default function Dashboard({
                           type="number"
                           id="inputStartDay"
                           autoComplete="off"
-                          defaultValue={selectedStartDay}
+                          placeholder={selectedStartDay}
                           onChange={(e) => {
                             const value = e.target.value;
                             setTimeout(() => {
@@ -489,7 +479,7 @@ export default function Dashboard({
                           type="number"
                           id="inputStartYear"
                           autoComplete="off"
-                          defaultValue={selectedStartYear}
+                          placeholder={selectedStartYear}
                           onChange={(e) => {
                             const value = e.target.value;
                             setTimeout(() => {
@@ -513,7 +503,7 @@ export default function Dashboard({
                           type="number"
                           id="inputFinalDay"
                           autoComplete="off"
-                          defaultValue={selectedFinalDay}
+                          placeholder={selectedFinalDay}
                           onChange={(e) => {
                             const value = e.target.value;
                             setTimeout(() => {
@@ -526,7 +516,7 @@ export default function Dashboard({
                           type="number"
                           id="inputFinalYear"
                           autoComplete="off"
-                          defaultValue={selectedFinalYear}
+                          placeholder={selectedFinalYear}
                           onChange={(e) => {
                             const value = e.target.value;
                             setTimeout(() => {
@@ -538,23 +528,19 @@ export default function Dashboard({
                     </DropdownMenuLabel>
 
                     {/*// Guardar btn */}
-                    <DropdownMenuItem asChild>
-                      <div className=" mt-2 px-2">
+                    <DropdownMenuItem2 asChild>
+                      <div className="mt-2 px-2 transition-all">
                         <button
                           className="btn-primary w-full"
                           onClick={saveParamsData}
                         >
-                          <div
-                            className={`${
-                              loading ? "animate-spin transition-all" : ""
-                            }`}
-                          >
+                          <div>
                             <LiaSave />
                           </div>
                           Guardar
                         </button>
                       </div>
-                    </DropdownMenuItem>
+                    </DropdownMenuItem2>
                   </DropdownMenuGroup>
                 </DropdownMenuContent>
               </DropdownMenu>

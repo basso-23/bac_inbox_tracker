@@ -33,6 +33,9 @@ export const authOptions = {
       return session;
     },
   },
+  pages: {
+    signIn: "/login",
+  },
 };
 
 // 👇 Handler para NextAuth API routes en App Router
