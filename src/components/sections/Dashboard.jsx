@@ -157,11 +157,11 @@ export default function Dashboard({
   const [selectedFinalDay, setSelectedFinalDay] = useState(currentFinalDay);
   const [selectedFinalYear, setSelectedFinalYear] = useState(currentYear);
 
-  const [refStartMonth, setRefStartMonth] = useState();
+  const [refStartMonth, setRefStartMonth] = useState(currentMonth);
   const [refStartDay, setRefStartDay] = useState();
   const [refStartYear, setRefStartYear] = useState();
 
-  const [refFinalMonth, setRefFinalMonth] = useState();
+  const [refFinalMonth, setRefFinalMonth] = useState(currentMonth);
   const [refFinalDay, setRefFinalDay] = useState();
   const [refFinalYear, setRefFinalYear] = useState();
 
@@ -337,9 +337,11 @@ export default function Dashboard({
   const saveParamsData = () => {
     setTimeout(() => {
       refStartDay && setSelectedStartDay(refStartDay);
+      refStartMonth && setSelectedStartMonth(refStartMonth);
       refStartYear && setSelectedStartYear(refStartYear);
 
       refFinalDay && setSelectedFinalDay(refFinalDay);
+      refFinalMonth && setSelectedFinalMonth(refFinalMonth);
       refFinalYear && setSelectedFinalYear(refFinalYear);
     }, 0);
   };
@@ -417,9 +419,9 @@ export default function Dashboard({
     const monthSelect = (index, mode) => {
       setTimeout(() => {
         if (mode === "inicio") {
-          setSelectedStartMonth(index + 1);
+          setRefStartMonth(index + 1);
         } else {
-          setSelectedFinalMonth(index + 1);
+          setRefFinalMonth(index + 1);
         }
       }, 0);
     };
@@ -431,7 +433,7 @@ export default function Dashboard({
             {mode === "inicio" ? (
               <button
                 className={`transition-all ${
-                  monthInWords(selectedStartMonth, "shorten") === mes
+                  monthInWords(refStartMonth, "shorten") === mes
                     ? "btn-primary !pointer-events-none"
                     : "btn-secondary"
                 }`}
@@ -442,7 +444,7 @@ export default function Dashboard({
             ) : (
               <button
                 className={`transition-all ${
-                  monthInWords(selectedFinalMonth, "shorten") === mes
+                  monthInWords(refFinalMonth, "shorten") === mes
                     ? "btn-primary !pointer-events-none"
                     : "btn-secondary"
                 }`}
@@ -585,7 +587,7 @@ export default function Dashboard({
                         <Popover>
                           <PopoverTrigger asChild>
                             <button>
-                              {monthInWords(selectedStartMonth, "shorten")}
+                              {monthInWords(refStartMonth, "shorten")}
                             </button>
                           </PopoverTrigger>
                           <PopoverContent asChild>
@@ -637,7 +639,7 @@ export default function Dashboard({
                         <Popover>
                           <PopoverTrigger asChild>
                             <button>
-                              {monthInWords(selectedFinalMonth, "shorten")}
+                              {monthInWords(refFinalMonth, "shorten")}
                             </button>
                           </PopoverTrigger>
                           <PopoverContent asChild>
