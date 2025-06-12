@@ -10,7 +10,7 @@ export default function Login() {
         <p className="mb-6 text-gray-600">Inicia sesión para continuar</p>
 
         <button
-          onClick={() => signIn("google")}
+          onClick={() => signIn("google", { callbackUrl: "/" })}
           className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
         >
           Iniciar sesión con Google
