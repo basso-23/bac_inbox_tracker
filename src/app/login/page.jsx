@@ -4,22 +4,35 @@ import { signIn } from "next-auth/react";
 
 export default function Login() {
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-10 rounded shadow-md text-center max-w-md w-full">
-        <h1 className="text-2xl font-bold mb-4">Bienvenido a Mi App</h1>
-        <p className="mb-6 text-gray-600">Inicia sesión para continuar</p>
+    <main className="h-[100dvh] flex items-center justify-center bg-[#fafafa]">
+      <div className="flex items-center flex-col login-container">
+        {/*//* Bac logo */}
+        <div className="login-logo-container">
+          <div className="login-logo"></div>
+        </div>
 
+        {/*//* Title  */}
+        <div className="font-large mt-6">Bienvenido, a Inbox Tracker</div>
+
+        {/*//* Subtitle */}
+        <div className="mt-2 text-[13px] font-medium text-center  tracking-tight ">
+          Conecta tu Gmail y controla tus finanzas sin esfuerzo.
+        </div>
+
+        {/*//* Gmail btn */}
         <button
           onClick={() => signIn("google", { callbackUrl: "/" })}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          className="google-btn mt-6 flex items-center gap-2 justify-center border-btn"
         >
+          <div className="google-btn-logo"></div>
           Iniciar sesión con Google
         </button>
 
-        <div className="mt-6 text-sm text-gray-500">
-          <p>
-            ¿No tienes una cuenta? Puedes crearla desde tu cuenta de Google.
-          </p>
+        {/*//* Nota */}
+        <div className="mt-10 text-[13px] font-medium text-center w-[350px] tracking-tight text-secondary-color">
+          Nota: Debe tener correos de{" "}
+          <strong>notificacion_pa@pa.bac.net</strong> en su bandeja de entrada
+          de Gmail para que la plataforma pueda acceder a sus transacciones.
         </div>
       </div>
     </main>

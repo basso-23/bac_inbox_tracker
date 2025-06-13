@@ -472,7 +472,7 @@ export default function Dashboard({
               style={{ backgroundImage: `url(bac_logo.svg` }}
             ></div>{" "}
             <div className="separator-vertical"></div>{" "}
-            <div className="font-large">Mail Checker</div>
+            <div className="font-large">Inbox Tracker</div>
           </div>
 
           {/*//* Logout btn */}
