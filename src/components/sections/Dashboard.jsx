@@ -464,15 +464,15 @@ export default function Dashboard({
     <>
       <div className="main-container">
         {/*//---- HEADER ---- */}
-        <div className="header-container general-padding">
+        <div className="header-container general-padding h-[61px]">
           {/*//* Title and logo */}
           <div className="flex items-center gap-3">
             <div
               className="logo"
-              style={{ backgroundImage: `url(logo-small.svg` }}
-            ></div>
-
-            <div className="font-large font-semibold">BAC Mail Checker</div>
+              style={{ backgroundImage: `url(bac_logo.svg` }}
+            ></div>{" "}
+            <div className="separator-vertical"></div>{" "}
+            <div className="font-large">Mail Checker</div>
           </div>
 
           {/*//* Logout btn */}
