@@ -466,7 +466,7 @@ export default function Dashboard({
         {/*//---- HEADER ---- */}
         <div className="header-container general-padding h-[61px]">
           {/*//* Title and logo */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 title-logo">
             <div
               className="logo"
               style={{ backgroundImage: `url(bac_logo.svg` }}
